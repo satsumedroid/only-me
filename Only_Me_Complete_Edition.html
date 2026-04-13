@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Only Me — Complete Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Inconsolata:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #09080a;
+  --deep: #0f0d11;
+  --surface: #161318;
+  --border: #2e2933;
+  --border-bright: #5a5268;
+  --ink: #d4ccd8;
+  --ink-dim: #9a90a6;
+  --ink-faint: #3a3540;
+  --red: #7a1e1e;
+  --red-mid: #9b2b2b;
+  --red-bright: #c0392b;
+  --gold: #c8a84b;
+  --gold-dim: #8a6e2e;
+  --twin: #3a5a7a;
+  --twin-bright: #5b8aad;
+  --nav-h: 52px;
+  --btn-h: 58px;
+  --page-max: 700px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--void);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;line-height:1.95;display:flex;flex-direction:column;position:relative}
+
+/* grain */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
+
+/* ── TOP BAR ── */
+#topbar{height:var(--nav-h);background:linear-gradient(180deg,#100d14,#0d0b11);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1rem;gap:.8rem;flex-shrink:0;z-index:200;position:relative}
+#topbar-title{font-family:'Playfair Display',serif;font-size:.85rem;color:var(--ink);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:italic;letter-spacing:.02em}
+#toc-toggle{background:none;border:1px solid var(--border-bright);color:var(--ink);font-family:'Inconsolata',monospace;font-size:.65rem;letter-spacing:.1em;padding:.35rem .8rem;cursor:pointer;text-transform:uppercase;transition:all .2s;white-space:nowrap;flex-shrink:0;border-radius:2px}
+#toc-toggle:hover{border-color:var(--red-mid);color:var(--red-bright)}
+
+/* ── TOC PANEL ── */
+#toc-panel{position:absolute;top:var(--nav-h);left:0;right:0;background:#0d0a10;border-bottom:1px solid var(--border);max-height:0;overflow:hidden;transition:max-height .38s cubic-bezier(.4,0,.2,1);z-index:199;box-shadow:0 12px 40px rgba(0,0,0,.7)}
+#toc-panel.open{max-height:65vh;overflow-y:auto}
+#toc-inner{padding:1.2rem 1.4rem 1.6rem;display:grid;grid-template-columns:1fr 1fr;gap:0 2rem}
+.toc-section-head{grid-column:1/-1;font-family:'Inconsolata',monospace;font-size:.6rem;letter-spacing:.35em;color:var(--red-mid);text-transform:uppercase;margin-bottom:.6rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+.toc-book-head{grid-column:1/-1;font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;color:var(--ink);margin:.8rem 0 .2rem}
+.toc-act-row{grid-column:1/-1;font-family:'Inconsolata',monospace;font-size:.56rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin:.7rem 0 .15rem}
+.toc-link{display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1rem;color:var(--ink);text-decoration:none;padding:.15rem 0;transition:color .15s;cursor:pointer;border:none;background:none;text-align:left;width:100%;line-height:1.5}
+.toc-link:hover{color:var(--red-bright)}
+.toc-link.active{color:var(--red-bright);font-weight:600}
+
+/* ── BOOK VIEWPORT ── */
+#book-viewport{flex:1;overflow:hidden;position:relative;perspective:2000px}
+
+/* ── PAGES ── */
+.page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;opacity:0;pointer-events:none;will-change:transform,opacity;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+.page.active{opacity:1;pointer-events:all}
+.page.exit-left{animation:turnLeft .42s cubic-bezier(.4,0,.6,1) forwards}
+.page.exit-right{animation:turnRight .42s cubic-bezier(.4,0,.6,1) forwards}
+.page.enter-right{animation:enterRight .42s cubic-bezier(.2,0,.4,1) forwards}
+.page.enter-left{animation:enterLeft .42s cubic-bezier(.2,0,.4,1) forwards}
+
+@keyframes turnLeft{0%{transform:rotateY(0) translateX(0) scaleX(1);opacity:1}100%{transform:rotateY(-16deg) translateX(-5%) scaleX(.95);opacity:0}}
+@keyframes turnRight{0%{transform:rotateY(0) translateX(0) scaleX(1);opacity:1}100%{transform:rotateY(16deg) translateX(5%) scaleX(.95);opacity:0}}
+@keyframes enterRight{0%{transform:rotateY(16deg) translateX(5%) scaleX(.95);opacity:0}100%{transform:rotateY(0) translateX(0) scaleX(1);opacity:1}}
+@keyframes enterLeft{0%{transform:rotateY(-16deg) translateX(-5%) scaleX(.95);opacity:0}100%{transform:rotateY(0) translateX(0) scaleX(1);opacity:1}}
+
+/* ── PAGE INNER ── */
+.page-inner{max-width:var(--page-max);margin:0 auto;padding:3rem 2rem 3rem}
+
+/* scrollbar */
+.page::-webkit-scrollbar{width:3px}
+.page::-webkit-scrollbar-track{background:transparent}
+.page::-webkit-scrollbar-thumb{background:var(--red-mid);border-radius:2px}
+
+/* ── BOTTOM BAR ── */
+#bottombar{height:var(--btn-h);background:linear-gradient(0deg,#100d14,#0d0b11);border-top:1px solid var(--border);display:flex;align-items:center;flex-shrink:0;z-index:200}
+.nav-btn{height:100%;padding:0 1.4rem;background:none;border:none;color:var(--ink-dim);font-family:'Inconsolata',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:.45rem;transition:all .2s;flex-shrink:0;border-right:1px solid var(--border)}
+#btn-next{border-right:none;border-left:1px solid var(--border)}
+.nav-btn:hover:not(:disabled){color:var(--red-bright);background:rgba(192,57,43,.07)}
+.nav-btn:disabled{opacity:.22;cursor:default}
+.nav-arrow{font-size:1.1rem;line-height:1}
+#progress-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.28rem;padding:.2rem 1rem}
+#progress-label{font-family:'Inconsolata',monospace;font-size:.58rem;letter-spacing:.15em;color:var(--ink-dim);text-transform:uppercase}
+#progress-bar-wrap{width:100%;height:2px;background:var(--border);border-radius:1px;overflow:hidden}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--red-mid),var(--red-bright));border-radius:1px;transition:width .4s ease;min-width:2px}
+
+/* ── COVER PAGE ── */
+#page-0 .page-inner{min-height:calc(100vh - var(--nav-h) - var(--btn-h));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3rem 2rem}
+.cover-eyebrow{font-family:'Inconsolata',monospace;font-size:.65rem;letter-spacing:.4em;color:var(--ink-dim);text-transform:uppercase;margin-bottom:2.5rem}
+.cover-main-title{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,8vw,4.8rem);font-weight:400;color:var(--ink);line-height:1.1;margin-bottom:.5rem}
+.cover-main-title em{color:var(--red-bright);text-shadow:0 0 40px rgba(192,57,43,.3);font-style:italic}
+.cover-tagline{font-style:italic;font-size:.98rem;color:var(--ink-dim);margin-bottom:3rem;max-width:460px;line-height:1.7}
+.cover-rule{width:100px;height:1px;background:linear-gradient(to right,transparent,var(--red-mid),transparent);margin:0 auto 2.5rem}
+.cover-books{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem}
+.cover-book-card{border:1px solid var(--border-bright);padding:1.2rem 1.5rem;text-align:left;min-width:170px;max-width:220px;background:var(--deep);cursor:pointer;transition:border-color .2s,box-shadow .2s;position:relative}
+.cover-book-card:hover{border-color:var(--red-mid);box-shadow:0 0 20px rgba(155,43,43,.15)}
+.book-card-label{font-family:'Inconsolata',monospace;font-size:.57rem;letter-spacing:.22em;color:var(--red-mid);text-transform:uppercase;display:block;margin-bottom:.4rem}
+.book-card-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--ink);font-style:italic;display:block;margin-bottom:.25rem;line-height:1.3}
+.book-card-sub{font-size:.78rem;color:var(--ink-dim);font-style:italic}
+.start-btn{font-family:'Inconsolata',monospace;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink);border:1px solid var(--border-bright);background:none;padding:.7rem 2rem;cursor:pointer;transition:all .2s;border-radius:2px}
+.start-btn:hover{border-color:var(--red-bright);color:var(--red-bright);background:rgba(192,57,43,.07)}
+
+/* ── BOOK TITLE PAGES ── */
+.book-title-inner{min-height:calc(100vh - var(--nav-h) - var(--btn-h));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3rem 2rem}
+.book-eyebrow{font-family:'Inconsolata',monospace;font-size:.6rem;letter-spacing:.35em;color:var(--ink-dim);text-transform:uppercase;margin-bottom:2rem}
+.book-big-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,6vw,3.6rem);font-weight:400;color:var(--ink);margin-bottom:.4rem;line-height:1.15}
+.book-big-title em{color:var(--red-bright);text-shadow:0 0 30px rgba(192,57,43,.25)}
+.book-sub-text{font-style:italic;color:var(--ink-dim);font-size:.92rem;margin-bottom:2rem}
+.book-divider{width:70px;height:1px;background:linear-gradient(to right,transparent,var(--red-mid),transparent);margin:1.5rem auto}
+
+/* ── CHAPTER PROSE ── */
+.chapter{margin-bottom:4rem}
+.ch-head{margin-bottom:2.5rem;padding-left:1.2rem;border-left:2px solid var(--red)}
+.ch-num{font-family:'Inconsolata',monospace;font-size:.6rem;letter-spacing:.3em;color:var(--red-mid);text-transform:uppercase;display:block;margin-bottom:.3rem}
+.ch-title{font-family:'Playfair Display',serif;font-size:1.55rem;font-weight:400;color:var(--ink);line-height:1.25}
+.chapter p{margin-bottom:1.3rem;text-align:justify;hyphens:auto}
+.chapter p.mc{font-style:italic;color:#a098aa;padding-left:1.3rem;border-left:1px solid var(--border);font-size:.97em}
+.chapter p.twin{font-family:'Inconsolata',monospace;font-size:.85rem;color:#7aaac8;background:rgba(58,90,122,.09);border:1px solid rgba(91,138,173,.2);border-left:3px solid var(--twin-bright);padding:.85rem 1.1rem;margin:1.6rem 0;line-height:1.75}
+.twin-label{font-size:.6rem;letter-spacing:.25em;color:var(--twin-bright);text-transform:uppercase;display:block;margin-bottom:.4rem;font-family:'Inconsolata',monospace}
+.chapter p.eerie{font-family:'Inconsolata',monospace;font-size:.83rem;color:#a09580;background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--red);padding:.9rem 1.1rem;margin:1.8rem 0;line-height:1.8;position:relative}
+.chapter p.eerie::before{content:'notebook';position:absolute;top:-.65rem;left:.9rem;font-size:.55rem;letter-spacing:.2em;background:var(--void);padding:0 .4rem;color:var(--red-mid);text-transform:uppercase}
+.chapter p.artifact{font-family:'Inconsolata',monospace;font-size:.82rem;color:var(--gold);background:rgba(184,154,74,.05);border:1px solid rgba(184,154,74,.2);border-left:3px solid var(--gold);padding:.9rem 1.1rem;margin:1.8rem 0;line-height:1.8}
+.chapter p.beat{text-align:center;font-style:italic;color:var(--red-bright);margin:2.2rem 0;font-size:.97em;letter-spacing:.02em}
+.chapter p.soul{text-align:center;font-family:'Inconsolata',monospace;font-size:.8rem;color:var(--ink-dim);margin:1.5rem 0;letter-spacing:.1em}
+.chapter p.void{text-align:center;color:var(--ink-faint);font-style:italic;font-size:1.05rem;margin:.6rem 0;letter-spacing:.04em}
+.brk{text-align:center;color:var(--red);margin:2rem 0;font-size:.8rem;letter-spacing:.6em;opacity:.5}
+.note{font-family:'Inconsolata',monospace;font-size:.65rem;letter-spacing:.08em;color:var(--ink-faint);text-align:center;border:1px solid var(--border);padding:.5rem 1rem;margin-bottom:2rem;background:var(--surface)}
+.act-break{text-align:center;margin:3.5rem 0 2.5rem;position:relative}
+.act-break::before,.act-break::after{content:'';display:block;height:1px;background:linear-gradient(to right,transparent,var(--red),transparent);opacity:.35}
+.act-break::before{margin-bottom:1.5rem}
+.act-break::after{margin-top:1.5rem}
+.act-num{font-family:'Inconsolata',monospace;font-size:.6rem;letter-spacing:.4em;color:var(--red-mid);text-transform:uppercase;display:block;margin-bottom:.4rem}
+.act-name{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:400;color:var(--ink);display:block;line-height:1;margin-bottom:.3rem}
+.act-theme{font-style:italic;font-size:.88rem;color:var(--ink-dim);display:block}
+.final{text-align:center;font-family:'Playfair Display',serif;font-size:1.8rem;font-style:italic;color:var(--red-bright);margin-top:3.5rem;padding-top:2.5rem;border-top:1px solid var(--border);text-shadow:0 0 40px rgba(192,57,43,.3);animation:pulse-red 4s ease-in-out infinite}
+@keyframes pulse-red{0%,100%{text-shadow:0 0 40px rgba(192,57,43,.3)}50%{text-shadow:0 0 70px rgba(192,57,43,.55),0 0 120px rgba(192,57,43,.2)}}
+.end-marker{text-align:center;font-family:'Inconsolata',monospace;font-size:.6rem;letter-spacing:.5em;color:var(--ink-faint);margin:4rem 0 2rem;text-transform:uppercase}
+@keyframes flicker{0%,94%,100%{opacity:1}95%{opacity:.3}97%{opacity:.8}98%{opacity:.1}99%{opacity:.9}}
+.flicker{animation:flicker 9s 3s infinite}
+
+/* prequel */
+.prequel-chapter p{margin-bottom:1.2rem;text-align:justify;hyphens:auto}
+.prequel-chapter p.thought{font-style:italic;color:#a098aa;padding-left:1.3rem;border-left:1px solid var(--border)}
+.scene-stamp{text-align:center;font-style:italic;color:var(--ink-dim);margin:2rem 0}
+
+::selection{background:var(--red);color:#f0e8e8}
+@media(max-width:600px){
+  body{font-size:16px}
+  .page-inner{padding:2rem 1.2rem 2rem}
+  #toc-inner{grid-template-columns:1fr}
+  .cover-books{flex-direction:column;align-items:center}
+  .nav-btn{padding:0 .9rem;font-size:.62rem}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header id="topbar">
+  <span id="topbar-title">Only Me &mdash; Complete Edition</span>
+  <button id="toc-toggle" aria-expanded="false" aria-controls="toc-panel">&#9776;&nbsp; Contents</button>
+</header>
+
+<!-- TOC PANEL -->
+<div id="toc-panel" role="navigation" aria-label="Table of Contents">
+  <div id="toc-inner">
+    <div class="toc-section-head">Complete Edition</div>
+    <div class="toc-book-head" style="grid-column:1/-1">Book One</div>
+    <button class="toc-link" data-page="0">&#9670; Front Cover</button>
+    <button class="toc-link" data-page="1">&#9670; Only Me (Prequel)</button>
+    <div class="toc-book-head" style="grid-column:1/-1">Book Two &mdash; Is it Really&hellip; Only Me?</div>
+    <div class="toc-act-row">Act I &mdash; After</div>
+    <button class="toc-link" data-page="2">Ch. 1 &mdash; New Life</button>
+    <button class="toc-link" data-page="3">Ch. 2 &mdash; Borrowed Comfort</button>
+    <button class="toc-link" data-page="4">Ch. 3 &mdash; The Shape of Absence</button>
+    <button class="toc-link" data-page="5">Ch. 4 &mdash; The First Error</button>
+    <div class="toc-act-row">Act II &mdash; Residue</div>
+    <button class="toc-link" data-page="6">Ch. 5 &mdash; Echoes</button>
+    <button class="toc-link" data-page="7">Ch. 6 &mdash; The Reflection Delay</button>
+    <button class="toc-link" data-page="8">Ch. 7 &mdash; Memory Bleed</button>
+    <button class="toc-link" data-page="9">Ch. 8 &mdash; Compression</button>
+    <button class="toc-link" data-page="10">Ch. 9 &mdash; Internal Battle: Part 1</button>
+    <button class="toc-link" data-page="11">Ch. 10 &mdash; Internal Battle: Part 2</button>
+    <button class="toc-link" data-page="12">Ch. 11 &mdash; The Other</button>
+    <div class="toc-act-row">Act III &mdash; Collapsing Reality</div>
+    <button class="toc-link" data-page="13">Ch. 12 &mdash; Lots of Me</button>
+    <button class="toc-link" data-page="14">Ch. 13 &mdash; Crack in Reality</button>
+    <button class="toc-link" data-page="15">Ch. 14 &mdash; Reality on the Verge of Collapse</button>
+    <button class="toc-link" data-page="16">Ch. 15 &mdash; Restoration</button>
+    <button class="toc-link" data-page="17">Ch. 16 &mdash; Internal Conflict: Remaining Morality</button>
+    <button class="toc-link" data-page="18">Ch. 17 &mdash; Unexpected Consequences</button>
+    <button class="toc-link" data-page="19">Ch. 18 &mdash; Escalating Destruction</button>
+    <button class="toc-link" data-page="20">Ch. 19 &mdash; Battle for Dominance</button>
+    <button class="toc-link" data-page="21">Ch. 20 &mdash; Final Choice</button>
+  </div>
+</div>
+
+<!-- BOOK VIEWPORT -->
+<div id="book-viewport">
+
+  <!-- PAGE 0: COVER -->
+  <div class="page active" id="page-0">
+    <div class="page-inner">
+      <p class="cover-eyebrow">A Two-Part Story</p>
+      <h1 class="cover-main-title">Only Me<br><em style="font-size:.68em">&hellip;&amp; Is it Really Only Me?</em></h1>
+      <p class="cover-tagline">A story about wanting a better life badly enough to take someone else&rsquo;s &mdash; and what refuses to stay gone.</p>
+      <div class="cover-rule"></div>
+      <div class="cover-books">
+        <div class="cover-book-card" onclick="goToPage(1)">
+          <span class="book-card-label">Book One &mdash; Prequel</span>
+          <span class="book-card-title">Only Me</span>
+          <span class="book-card-sub">The original story</span>
+        </div>
+        <div class="cover-book-card" onclick="goToPage(2)">
+          <span class="book-card-label">Book Two &mdash; Sequel</span>
+          <span class="book-card-title">Is it Really&hellip; Only Me?</span>
+          <span class="book-card-sub">20 chapters &bull; 3 acts</span>
+        </div>
+      </div>
+      <button class="start-btn" onclick="goToPage(1)">Begin Reading &rarr;</button>
+    </div>
+  </div>
+
+  <!-- PAGE 1: PREQUEL -->
+  <div class="page" id="page-1">
+    <div class="page-inner">
+      <div class="book-title-inner" style="min-height:auto;padding:2rem 0 3rem">
+        <p class="book-eyebrow">Book One</p>
+        <h1 class="book-big-title">Only Me</h1>
+        <p class="book-sub-text">The original story</p>
+        <div class="book-divider"></div>
+      </div>
+      <div class="prequel-chapter">
+        <p>I wake up in the morning, feeling a bit tired. This happens for a few days now. I only feel tired, so I just ignored it. I went downstairs to eat breakfast after stretching for a bit.</p>
+        <p>MC: Mother of mine, what sustenance have you made today?</p>
+        <p>Mom: Why do you keep speaking in a weird way. Well, whatever. The food is ready.</p>
+        <p>MC: Oh right, mother of mine. I shall go to the library across the town to study for the written challenge that the teacher has bestowed upon us.</p>
+        <p>Mom: Why do you have to go across the town? We have library here at home.</p>
+        <p>MC: There is?</p>
+        <p>Mom: Yes, it&rsquo;s in the basement. Your father transformed the basement to make it into a library since you keep fooling around when you go to the library.</p>
+        <p>MC: Right . . .</p>
+        <p>I keep having this weird feeling that something is not right. From the way mother keeps saying that my way of speaking is weird, to having a library at home, and mother saying I keep fooling around instead of studying in a library, when in fact I am a diligent and hardworking student. But I shoved these weird thoughts in the back of my mind since I need to study for the exam. I went to the basement that has been repurposed into a library. After studying for a few hours, I went upstairs to eat lunch and then went back to the library to study more. Since it&rsquo;s Sunday, I get to study for a whole day for tomorrow&rsquo;s test. After a few hours more of studying, Father called me to have a dinner. We both went upstairs together.</p>
+        <p>Dad: Wow, you really studied this time. I thought you&rsquo;ll look at the book then sleep after playing games. I&rsquo;m proud of you.</p>
+        <p>MC: You jest, father of mine. I am always diligent at studying.</p>
+        <p>After saying that, mother and father looked at each other and burst out laughing.</p>
+        <p>Dad: Diligent? You? Sorry son, but your grades and attendance begs to differ. Like, did you eat something weird? Studying and talking weirdly.</p>
+        <p>I really got mad after hearing that from . . . father? A person I shouldn&rsquo;t be able to talk to, a person that shouldn&rsquo;t exist.</p>
+        <p class="thought">MC: (What&rsquo;s happening? Why do I keep having this weird thoughts and feelings.)</p>
+        <p>These weirdness keeps unsettling me, so I excused myself and went outside for a walk. I got a good look of our house. We have quite a big house. It seems we are kind of well off. Again, I had these feeling that we should not be rich, but we are. Perhaps I&rsquo;m just tired, so I decided to go to bed early. After arriving inside my room, I noticed this creepy looking mirror. It has this weird looking symbol etched to the frame. It shouldn&rsquo;t be possible to know the meaning of those symbols, but weirdly enough, I kind of do. And I subconsciously want to read them out loud, in which I did. After that, I went to sleep since I feel sleepy all of a sudden.</p>
+        <p class="scene-stamp">The next day . . .</p>
+        <p>I woke up and did my morning routine, then went downstairs. I saw mother eating breakfast, and asked her.</p>
+        <p>MC: Mother, what sustenance have you cooked for us to eat?</p>
+        <p>Mother looked at me like she just heard the most ridiculous thing ever.</p>
+        <p>Mother: Us? I only made food for myself. You expect me to cook for you? Do it yourself. You&rsquo;re already freeloading here and you still want me to do things for you? Unbelievable.</p>
+        <p>After saying that, mother stormed off the house. But I did not get angry at her response. It was as if it is all . . . natural.</p>
+        <p class="thought">MC: (Yes, that&rsquo;s how mother usually treats me. But why is she kind yesterday? In fact, what even happened yesterday? Why can&rsquo;t I remember a thing about that?)</p>
+        <p>I again pushed those weird thoughts away. I prepared breakfast and then got ready for school.</p>
+        <p class="scene-stamp">In the school . . .</p>
+        <p>Teacher: Settle now everyone. I will be distributing the test paper. There is a slight change though, we will be having a 100 item test instead of the usual 80 items.</p>
+        <p>Everybody groaned after hearing the statement.</p>
+        <p>Student A: Teach, why did you suddenly change the number of items in the test.</p>
+        <p>Teacher: It is not my decision to change. It is from the higher-ups. They made the decision. And if you really study anyway, you will pass this test. So quiet down so I can distribute the test papers. You have an hour and a half to answer it.</p>
+        <p>After getting my paper, I looked at it and thought.</p>
+        <p class="thought">MC: (This seems easy. I should be able to ace this test.)</p>
+        <p>I was feeling confident so I answered the questions for the next hour. Then, I passed my test paper and went to the next room for the other test. I am also confident in acing those test so I answered them normally.</p>
+        <p>After school class ended, I heard some student talking near the gate.</p>
+        <p>Student A: Do you think you passed the test?</p>
+        <p>Student B: I don&rsquo;t know man, the test is pretty hard.</p>
+        <p>I also want to socialize for a bit but I&rsquo;m kind of tired, so I went home. In the house, after arriving, I saw mother watching TV and I approached her to ask something that just pops out on my mind.</p>
+        <p>MC: Mother, why did father made the basement into library again?</p>
+        <p>Mother: What are you talking about? We don&rsquo;t have a library or basement for that matter. And we don&rsquo;t even have money to repair the house much less for building said library.</p>
+        <p>Right . . . we don&rsquo;t have a library, why did I ask her that? There&rsquo;s no reason too. In the first place, father is dead. He died when I was a little boy. These weird thoughts and feelings is creeping me out. So I just ate dinner, went to bed early, well, not after looking at the creepy mirror and reading those weird symbol.</p>
+        <p>Waking up the next day, I heard mother speaking.</p>
+        <p>Mom: Hey sweetie, wake up. You&rsquo;re gonna be late for school.</p>
+        <p class="thought">MC: (Mother waking me up? That&rsquo;s unusual. And me late for school? It&rsquo;s only . . . oh my god. I&rsquo;m really gonna be late for school!!)</p>
+        <p>After getting up and dressing, I hurriedly go to school. I even skipped breakfast. After arriving at school, I heard the bell rang.</p>
+        <p class="thought">MC: (That was a close call. I almost broke my perfect attendance. Why did I wake up late anyway? I slept early, so it should not be possible.)</p>
+        <p>After mulling over the almost disastrous morning, I went inside the classroom since they will announce the scores of the previous test.</p>
+        <p>Teacher: Okay, settle down everyone. I will announce the score of everyone. First is . . .</p>
+        <p>The teacher then proceeded to announce the scores until it is my turn. He announced my score and what he said shocked me. I . . . failed. My mind went blank. I don&rsquo;t know how I failed when the test is kind of easy for me. So I raised my hand and politely asked the teacher.</p>
+        <p>MC: Excuse me teacher. I think there is some kind of mistake. How did I fail the test that you have given us. I am quite confident in my answers.</p>
+        <p>Then my classmates started laughing. It irritates me so much. Why are they laughing? What&rsquo;s so funny about what I said. But I ignored them for now since my focus is on the test scores.</p>
+        <p>Teacher: You can take a look at your test papers if you&rsquo;re not satisfied.</p>
+        <p>And I did. What I saw baffled me. The answers are mostly wrong. It is not the answers that I wrote. And my handwriting and the things that are written in the papers does not match. How did that happen? My name is clearly written on the paper. Unless someone is playing prank on me. Though I doubt that.</p>
+        <p>Teacher: Are you satisfied?</p>
+        <p>I just nodded. And I hear my classmates murmuring. I&rsquo;m not in the mood to talk so I just ignored them. I was so distracted that I did not even realize that the school day ended and it is time to go home. Weirdly enough, nobody bothered me. While traveling home, the event still occupied my mind. Even my parents are worried since I&rsquo;m so quiet while eating. I reassured and told them that I&rsquo;m okay and I would like to rest. I went to my room, looked at the mirror, read the symbols and went to sleep.</p>
+        <p>The next day, I woke up feeling bummed from the failed test. Which is weird since I passed the test with flying colors. After having this feeling again, I got angry since I&rsquo;m on my wits end.</p>
+        <p>MC: What is happening, why am I having this feeling that events happened but I have no recollection of it. This is so frustrating. Aahhhh.</p>
+        <p class="thought">MC: (I need to calm down. There&rsquo;s no point getting angry. Try to remember what you can . . . I don&rsquo;t remember a thing. Haaah. This is so frustrating. Whatever. What happens happen. I don&rsquo;t care anymore.)</p>
+        <p>With that, I decided to ignore all the weirdness happening to me and live like a normal person . . . is what I thought. But I just can&rsquo;t. Not with the constant feeling of something opposite happening but having no memory of it. It is driving me mad. But one day, something out of this world happened. I saw myself come out of the creepy mirror. Sort of. He looked exactly like me. I thought I&rsquo;m still asleep and dreaming, so I slapped myself. It hurts . . . which means it is real. All of this is real.</p>
+        <p>MC: Who are you? What are you doing here? Who-who-what is happening?</p>
+        <p>Twin: Relax. I am you. But from a different world. So I also don&rsquo;t know the logistics here. I bought this Necklace and it resonated with the mirror. It also tells me how to use it, though I skipped bunch of things.</p>
+        <p>MC: So-so-so the weird feelings that keeps popping out is because of you?</p>
+        <p>Twin: Not quite. It is actually from you going to my world and having those experience. But they are not from this world so it gets replaced by the memories of the events you should have made in this world after we switch back. Oh, by the way, we only have an hour that is allowed to be together in the same world. After the time limit, if both of us is still together then the other person with no necklace gets thrown to the other world.</p>
+        <p class="thought">MC: (So the necklace is what allows him to change worlds with me. What if&hellip;?)</p>
+        <p>MC: So if I have the necklace, I will be able to do that too?</p>
+        <p>Twin: Don&rsquo;t even think about it. I&rsquo;m the only one that can use it. Me, so drop your thoughts of getting it from me.</p>
+        <p>MC: I&rsquo;ve got no such thoughts (smiles). Just curious.</p>
+        <p class="thought">MC: (Bummer. He&rsquo;s the only one who can use it. But . . . smiles)</p>
+        <p>MC: But why did you decide to show up here and explain all of this to me?</p>
+        <p>Twin: One of the functions of the necklace is sensing the mental state of the one I&rsquo;m switching with. And it sensed that your mental state is quite dangerous. And I don&rsquo;t even know it has this function, it just did and it let me know.</p>
+        <p>MC: I&rsquo;m not gonna end my life, you know.</p>
+        <p>Twin: Won&rsquo;t if you did? I&rsquo;m just being safe. Who am I gonna switch to if you&rsquo;re gone. Hahaha.</p>
+        <p>MC: So who do you have to switch with me anyway. You have a great life there . . . How did I know that?</p>
+        <p>Twin: I gave the memories of you on that world. Aaaah, my parents keep nagging me about everything. So when I discovered that you are not much monitored here, I decided this is the place to have fun. No parents nagging me. Perfect.</p>
+        <p class="thought">MC: (So he&rsquo;s taking things for granted. I&rsquo;d kill for me to have his life . . .)</p>
+        <p>And so, we keep switching places every other day since that&rsquo;s how the necklace&rsquo;s power work. And I also have having a loving family, having a great life. I wish this never ends. Although we have to switch back every night and going back to the old life, it is quite comforting. And the reason that I know the symbols in the mirror, I am forced to say it so that we can switch. Everything is great. Until one day . . .</p>
+        <p>Twin: Cause I got tired of doing this? And my parents loosened their grip on me anyways since I got good grades.</p>
+        <p>MC: That&rsquo;s because I painstakingly raised your grade. And you&rsquo;ll just end it on a whim without even telling me?</p>
+        <p>Twin: Thank you for doing all the work. Hahahaha. And I&rsquo;m telling it to you, now aren&rsquo;t I? So what&rsquo;s the big deal?</p>
+        <p>MC: . . . . . Wha?</p>
+        <p class="thought">MC: (No, I can&rsquo;t let it end just like that. I have to do something. Right. I&rsquo;ll just replace him hehehe. No need for another me. I&rsquo;ll just make him disappear!!)</p>
+        <p>MC: Haaah, alright. But can you come here tomorrow one last time? I&rsquo;m gonna make a farewell meal to thank you.</p>
+        <p>Twin: Fine!</p>
+        <p>And so, I prepared something for him, something that would forever change his life. I shopped for ingredients that I&rsquo;m gonna cook for the meal. Along with the poison that I&rsquo;m gonna use to end his life. And some back up like hidden weapons for good measure.</p>
+        <p>And the time of the end has come. I am quite nervous since he might notice that I&rsquo;m gonna poison his meal and take the necklace. Although I have counter measure if he asked to switch foods. That we&rsquo;ll eat. Since both have poison in it, I have the antidote ready for me. But my worries are unfounded since the &ldquo;other me&rdquo; is quite arrogant and stupid. So my plan worked without a hitch. And I talked to him while he is dying. Funny scene.</p>
+        <p>MC: Did you not ever think that I&rsquo;ll take that necklace for myself?</p>
+        <p>Twin: You won&rsquo;t be able to use it, so why take it? (dying)</p>
+        <p>MC: Well, nobody can use it, other than &ldquo;you&rdquo; of course. But, I am also &ldquo;you&rdquo;. Have you ever thought of that? Hahahahaha . . .</p>
+        <p>Twin: . . . . .</p>
+        <p>And so, the &ldquo;other me&rdquo; died, just like that. Quite anticlimactic really. No resistance. No epic battle, although that&rsquo;s just me being dramatic. No nothing. It ended. Just ended.</p>
+        <p>After that event, I went to see my mother and say goodbye to her. If she tried to prevent me from going, then perhaps I&rsquo;ll consider my decision of leaving permanently.</p>
+        <p>MC: Mother, I will be leaving. I do not think I will ever come back here.</p>
+        <p>Mother: Sure, go away already. One less mouth to feed. Good riddance.</p>
+        <p>MC: . . . .</p>
+        <p>She did not even ask what I&rsquo;m gonna do, where I will go. I don&rsquo;t think I will ever miss this place. With that, I went to my room, used the necklace and hop into the mirror to go to the other world. After arriving, I destroyed the mirror and the necklace. It is of no use anyway. I am at a better place. With me. Only Me.</p>
+        <p class="end-marker">&mdash;&nbsp;&nbsp;The End&nbsp;&nbsp;&mdash;</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- PAGE 2: Ch 1 -->
+  <div class="page" id="page-2">
+    <div class="page-inner">
+<div class="act-break">
+  <span class="act-num">Act I</span>
+  <span class="act-name">After</span>
+  <span class="act-theme">Guilt slowly resurfacing</span>
+</div>
+
+<article class="chapter" id="ch1">
+  <div class="ch-head">
+    <span class="ch-num">Chapter One</span>
+    <h2 class="ch-title">New Life</h2>
+  </div>
+
+  <p class="note">[ Chapter One — as written by the author ]</p>
+
+  <p>I woke up, feeling refreshed. This is the first time I&rsquo;ve woken up and looked forward to the rest of the day. I looked up and saw a kind of unfamiliar ceiling. The ray of sunshine passes through the window, hitting my face preventing me from sleeping more. I stayed in bed for a few minutes, waiting for a certain feeling to come.</p>
+  <p class="beat">It did not come.</p>
+  <p>There&rsquo;s no dreadful or weird feeling. It is just a normal everyday morning. I got up the bed and stretched for a bit before going downstairs to eat breakfast. I saw mother preparing breakfast. I&rsquo;m not the one making my own. It seems that this is reality. Not a dream. I&rsquo;m really in a better place.</p>
+  <p>While I was contemplating the reality of the situation, I hear movement, plates clinking and soft humming. The smell of food reached my nose before I even arrived at the table. Eggs, toast maybe, and something sweet.</p>
+  <p>&ldquo;Good morning&rdquo; mother said with a smile. The kind of smile that is sweet and kind. Not like my other mother. &ldquo;You&rsquo;re up quite early.&rdquo;</p>
+  <p>&ldquo;I&rsquo;m kind of excited for school today so I woke up early. It is a new semester.&rdquo; I said. I&rsquo;m truly excited for today since it is a new semester like I said and also the first day of my permanent life in this world.</p>
+  <p>&ldquo;It is a big day today so eat your fill. I&rsquo;m going to take you to school today since it is my vacation for a week. We can bond for a while, like we used to.&rdquo;</p>
+  <p>Right. There&rsquo;s also father. A person that is absent in my life before. Now I also have one. It&rsquo;s nice having a whole loving family. Both mother and father present. I wonder if this is how he felt when they are together. The other me. No, no, no. It&rsquo;s no use thinking about it. He&rsquo;s already gone.</p>
+  <p>As I was having my internal monologue, I am kind of spacing out. My father thought that I don&rsquo;t like the idea of him taking me to school.</p>
+  <p>&ldquo;It&rsquo;s okay if you don&rsquo;t want me to do it.&rdquo; My father said in a kind of sad tone.</p>
+  <p>&ldquo;Ah. No, I&rsquo;d love to. I was just preoccupied with some useless thoughts. I&rsquo;m not unwilling at all.&rdquo; I said with a smile.</p>
+  <p>There&rsquo;s no way I would say no to that. That would be stupid. I should remove such useless thoughts. I&rsquo;ll forget the memories of mine from the other world and make new ones. Happy ones with my family.</p>
+  <p>&ldquo;Okay, that&rsquo;s great.&rdquo; he said with a smile.</p>
+  <p>After having that conversation, we started eating. I ate slowly, since I want to savor the time eating with my family. Although this is not a new experience since I already experienced it before. With the switching shenanigans. But this one is special because, like I said before, a start of the new life.</p>
+  <p>&ldquo;After you are done eating, just call me. I will be in the garage preparing the car. Okay?&rdquo; father said. And I did just that. After I finished eating, I prepared the things I need to bring to school. Then I went to the front yard where father is waiting. He looked kind of nervous. Went inside the car and father drove to school. While on the way, father asked various questions and talked a lot.</p>
+  <p>&ldquo;Uhm, how was your school lately?&rdquo; father asked.</p>
+  <p>&ldquo;It&rsquo;s great. I&rsquo;m having a great time at school. Everyone is nice to me for the past month.&rdquo; I replied.</p>
+  <p>&ldquo;Really?!? That&rsquo;s great. You really have changed. I was kinda surprised when you started studying seriously and thought that it would go away quickly. But you stick with it. I am so proud of you. You were kind of an unruly kid before so you don&rsquo;t get along well with others. Since you&rsquo;ve changed, you&rsquo;re able to get along with others now. What made you decide to turn into a new leaf anyway?&rdquo;</p>
+  <p>&ldquo;Just realized that I may have taken things for granted. You work hard to provide for our family, and here I am, wasting all of it by playing around. Don&rsquo;t worry father, I am a new person now.&rdquo;</p>
+  <p>&ldquo;I&rsquo;m not gonna dwell too much on the reasons. Everything is good so let&rsquo;s end it there. And we&rsquo;re about to arrive at your school.&rdquo;</p>
+  <p>I just smiled and did not continue the conversation until we reached the school. After father left, I stayed at the school gate for a few seconds, staring and imagining great things that waited ahead of me. Of course, I got a few ridiculing stares since I&rsquo;m giggling like an idiot. I woke up from my daydreaming and went inside the school. Then, my &ldquo;old friends&rdquo; saw me and decided to talk with me. I don&rsquo;t know any of them though. I never met them in the past 3 months that we&rsquo;ve been switching. Perhaps he arranged it that way because I would get found out that I&rsquo;m not him if I talk to them.</p>
+  <p>Old Friend A: &ldquo;Hey, wanna hang out after school? Or just after lunch since it is just first day. Nothing to do yet.&rdquo;</p>
+  <p>MC: &ldquo;&hellip; Today?&rdquo;</p>
+  <p>Old Friend B: &ldquo;Yeah, like what you said before, &lsquo;playing around is every other day only starting from now on&rsquo;. You said few months ago. You have important things to do you said.&rdquo;</p>
+  <p class="mc">(He really did arrange it that way.)</p>
+  <p>MC: &ldquo;I think I&rsquo;ll pass for today. I got lots to do today and there is a test so&hellip;&rdquo;</p>
+  <p>Old Friend A: &ldquo;Seriously? Now that you&rsquo;ve mentioned it, what&rsquo;s up with a test around here on the first day? That&rsquo;s dumb.&rdquo;</p>
+  <p>Old Friend B: &ldquo;Your loss man. Although tell us if you change your mind. We&rsquo;ll be waiting.&rdquo;</p>
+  <p>MC: &ldquo;Okay. Thanks.&rdquo;</p>
+  <p>Their words stayed longer than it should have. For a brief moment, an image popped up in my mind. Someone careless, loud, and always laughing. Someone who complained about his parents being too restrictive and kept goofing around with his friends. Sure he&rsquo;s an arrogant asshole. But there&rsquo;s someone who cares for him. Those feelings tightened my chest. Then I exhaled. The guilt lingered, even though it is thin and fragile. So I just brushed it off. There&rsquo;s no point mourning a life that was never mine.</p>
+  <p>After school I got the highest score in class. It feels nice. I arrived home, studied for a bit before eating dinner with my parents. I am kind of silent while eating so my parents got a bit worried.</p>
+  <p>Mom: &ldquo;Hey, are you okay?&rdquo;</p>
+  <p>Me: &ldquo;I&rsquo;m fine. I am just thinking of something. You don&rsquo;t have anything to worry about.&rdquo;</p>
+  <p>I ate and went to my room and straight to bed.</p>
+  <p>Me: &ldquo;He really does have a good life. Loving family, good friends. I feel bad for him now.&rdquo;</p>
+  <p>???: &ldquo;Oh, really now?&rdquo;</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 3: Ch 2 -->
+  <div class="page" id="page-3">
+    <div class="page-inner">
+<article class="chapter" id="ch2">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Two</span>
+    <h2 class="ch-title">Borrowed Comfort</h2>
+  </div>
+
+  <p>I sat up gasping.</p>
+  <p>The room was dark and silent and completely mine. I pressed both hands flat against the mattress and made myself breathe until the heartbeat settled. A dream. The voice at the end &mdash; that low, near-familiar &ldquo;Oh, really now?&rdquo; &mdash; a dream. The dead do not speak. That is the whole point of what I did. That is the whole point of everything.</p>
+  <p class="mc">(He is gone. I made sure of it. What I am hearing is guilt producing sounds. Guilt is not a ghost. It cannot hurt me.)</p>
+  <p>I lay back down and waited for morning, and morning came the way it always did in this world: warm, unhurried, with the smell of food rising from below like something designed to make you feel safe.</p>
+
+  <p>The days settled into a rhythm. Mother cooked. Father asked about school. Dinner was a conversation, not a performance of one. I was careful. I was precise. Every morning I told myself: <em>you planned this. You are good at this. Stay sharp.</em></p>
+  <p>About a week in, I came downstairs to find both my parents on the couch with an old photo album open across their laps. Father was pointing. Mother was already laughing before she saw me.</p>
+  <p>Mom: &ldquo;Come look. This is you at six.&rdquo;</p>
+  <p>A small boy covered in mud, grinning impossibly wide. I sat down and looked at the photo and kept my face arranged into the right shape.</p>
+  <p>Dad: &ldquo;You fell in the ditch trying to catch a frog and came home completely serious, telling us the frog had cheated. You were so offended.&rdquo;</p>
+  <p>They both laughed. I laughed one beat after them, which is one beat too late, but not so late that anyone counts.</p>
+  <p class="mc">(That child is not me. That mud is not mine. That grin belongs to a boy who grew up in this house and learned to walk in these halls and called these two people Mom and Dad for his entire life, and I poisoned him over a meal and watched him die and then moved into his room. And now I am sitting on his couch laughing at his childhood like I earned the right.)</p>
+  <p>Mom: &ldquo;And this one &mdash; first day of school. You wouldn&rsquo;t let go of my hand.&rdquo;</p>
+  <p>Me: &ldquo;I&rsquo;ve forgotten most of it, honestly. It&rsquo;s been so long.&rdquo;</p>
+  <p>Dad: &ldquo;That&rsquo;s okay. You&rsquo;ve grown up so much. My little frog-chaser.&rdquo;</p>
+  <p>He said it with so much uncomplicated love that something behind my sternum moved in a way I had not anticipated and could not fully name. He was aiming all of that at a grave. He just did not know it yet.</p>
+  <p class="mc">(Stop. Stop that. This is the life I chose. These are the terms.)</p>
+
+  <p>The friends were harder. Old Friend A and Old Friend B had a shorthand with him built from years of shared stupid moments &mdash; inside references and half-finished sentences that landed perfectly between them and reached me like radio signals from a station I couldn&rsquo;t tune into. I sat with them at the bench behind the building and kept my responses one beat behind and my smiles half a second late and hoped they attributed it to &ldquo;maturing.&rdquo;</p>
+  <p>Old Friend B: &ldquo;You&rsquo;re different lately. Like, a different kind of quiet.&rdquo;</p>
+  <p>Me: &ldquo;People change.&rdquo;</p>
+  <p>Old Friend A: &ldquo;Sure, but you changed all at once. Like someone flipped a switch.&rdquo;</p>
+  <p class="mc">(Closer than you know.)</p>
+  <p>Me: &ldquo;I just decided to be more serious. That&rsquo;s all.&rdquo;</p>
+  <p>They accepted this because they wanted to. People tend to choose the interpretation that requires the least amount of grief. I was counting on that.</p>
+
+  <p>But the mistakes accumulated. I answered a question about his childhood hobby with the wrong hobby. I flinched at a sound that, apparently, had never bothered him before. I forgot which side of the bed he slept on and mother noticed the pillow was wrong. Small things. Each one individually dismissible. Together they were beginning to form a shape.</p>
+  <p>At dinner, mother watched me eat something and set her fork down.</p>
+  <p>Mom: &ldquo;You used to hate this. You&rsquo;d make a whole face about it.&rdquo;</p>
+  <p>Me: &ldquo;I guess my taste changed.&rdquo;</p>
+  <p>She looked at father. Father looked back. That quiet, wordless exchange between people who have been married long enough to hold an entire conversation in a glance. Then they both smiled and moved on. They had already decided on the explanation &mdash; <em>he&rsquo;s changing, he&rsquo;s grown up</em> &mdash; and they were going to keep choosing it as long as I didn&rsquo;t give them a reason not to.</p>
+  <p class="mc">(Good. Let them rationalize. As long as they rationalize.)</p>
+  <p>I said goodnight and went upstairs and turned the light off and lay in the dark. And the dark was just the dark. No voice. No presence. Just a room and a boy in it who had killed someone to be there.</p>
+  <p>The guilt arrived then, not dramatically, just quietly, like water finding the lowest point in a room. I let it settle. It didn&rsquo;t feel like punishment yet. It just felt like weight.</p>
+  <p class="mc">(He&rsquo;s gone. He can&rsquo;t say anything. He can&rsquo;t feel anything. The voice was a dream and this is just guilt and guilt is manageable. Guilt is just the price of ambition.)</p>
+  <p>I closed my eyes.</p>
+  <p>From somewhere very close &mdash; not outside, not in the hall, not in any space I could point to &mdash; a sensation. Like being looked at from inside.</p>
+  <p class="beat">I convinced myself it was nothing. I was very convincing.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 4: Ch 3 -->
+  <div class="page" id="page-4">
+    <div class="page-inner">
+<article class="chapter" id="ch3">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Three</span>
+    <h2 class="ch-title">The Shape of Absence</h2>
+  </div>
+
+  <p>The group project was when I understood the true scale of what I could not take.</p>
+  <p>Grades: taken. Schedule: taken. Face, name, room, parents, history: taken. But the way he existed between people &mdash; the specific voltage of him in a social space, the way his presence made rooms feel louder without him saying anything &mdash; that was not a thing that transferred. It was not stored anywhere I could access. It had simply ended with him.</p>
+  <p>Old Friend A made a half-finished joke. The kind where the punchline is unspoken because the other person is supposed to feel it before it arrives. Both of them looked at me, waiting for whatever came next. Whatever he always said in that slot.</p>
+  <p>I said something technically correct. The laughter it got was polite. The silence after was brief but total.</p>
+  <p class="mc">(I have his face. I have his grades. I do not have whatever made people lean toward him. That part didn&rsquo;t come through the mirror. That part stayed with the body.)</p>
+  <p>Old Friend B held back after the session ended.</p>
+  <p>Old Friend B: &ldquo;I&rsquo;m not trying to be weird about this. I just &mdash; are you actually okay? Because you feel like you&rsquo;re somewhere else even when you&rsquo;re right here.&rdquo;</p>
+  <p>The specific care in his voice &mdash; the genuine worry aimed at a person who was no longer in the room to receive it &mdash; did something to the inside of my throat. I had not planned for this particular texture of guilt. The kind that comes not from what you took but from who is still looking for it.</p>
+  <p>Me: &ldquo;I&rsquo;m fine. Really.&rdquo;</p>
+  <p>He looked at me for a long moment. Then nodded. Then left.</p>
+  <p>On the walk home I let the thought go all the way to the end for the first time, not stopping it where it became uncomfortable.</p>
+  <p class="mc">(I cannot be him. Not fully. Not in the ways that matter to people who loved him. I can maintain the surface. I can keep the grades and the schedule and the polite smile at dinner. But every time someone who knew him reaches toward who he was, I will not be there. There will be nothing there but the performance of someone trying to be there. And people can feel that gap even when they can&rsquo;t name it. Old Friend B can feel it. The family feels it. They just keep choosing the explanation they can live with.)</p>
+  <p class="mc">(And there is nothing I can do about any of it. I killed the only person who could have filled that space.)</p>
+  <p>That was the thought that sat down in me and didn&rsquo;t move. Not abstract guilt. The specific, surgical understanding that what I destroyed was irreplaceable, and I had known it was irreplaceable, and I had done it anyway.</p>
+  <p>That night I lay in bed and spoke to the ceiling.</p>
+  <p>Me: &ldquo;I&rsquo;m sorry.&rdquo;</p>
+  <p>The silence answered the way silence always does: completely, and without mercy.</p>
+  <p>But then &mdash; under the silence, or inside it, or in the part of me that the silence reached &mdash; something shifted. Something that was not me registered the apology. Not with words. With something older than words. A sensation like pressure behind the eyes. Like being recognized.</p>
+  <p>I sat up in bed.</p>
+  <p class="beat">The room was empty. Of course it was empty. Of course.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 5: Ch 4 -->
+  <div class="page" id="page-5">
+    <div class="page-inner">
+<article class="chapter" id="ch4">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Four</span>
+    <h2 class="ch-title">The First Error</h2>
+  </div>
+
+  <p>I was studying for an exam. Four pages of notes, clean and organized, written in my careful hand. I knew the material. I always knew the material. I closed the notebook and went downstairs for dinner and came back and opened it again for a final review.</p>
+  <p>Near the bottom of the third page, there was a sentence.</p>
+  <p>I had not written it.</p>
+  <p>I knew with complete certainty that I had not written it, the way you know the inside of your own hand. The letters were close to mine &mdash; close enough that someone else might not have noticed &mdash; but the angle was wrong. The pressure was different. The loops on certain letters did not curve the way mine do. And the content of it, the cold, slightly contemptuous precision of it, was not mine either.</p>
+
+  <p class="eerie">You skipped a step in the derivation. Line 4. Also: I can tell when you&rsquo;re pretending not to feel things. You&rsquo;re doing it right now.</p>
+
+  <p>I checked line 4. There was an error. A real one, the kind I would have caught on second reading. The sentence had caught it instead.</p>
+  <p>I sat very still with the notebook in my hands and catalogued every rational explanation available to me. Dissociation. Stress. Unconscious self-correction that I didn&rsquo;t register writing. The handwriting difference was explainable &mdash; angle, fatigue, the pen held differently.</p>
+  <p>The second half of the sentence was not explainable. <em>I can tell when you&rsquo;re pretending not to feel things.</em> That was not a study note. That was addressed to me from something that had been watching me.</p>
+  <p class="mc">(He is dead. Dead people don&rsquo;t observe. Dead people don&rsquo;t correct homework. Dead people do not know what I am pretending.)</p>
+  <p class="mc">(Dead people do not have opinions about what I feel.)</p>
+  <p>I corrected line 4. I closed the notebook. I went to bed and told myself what I always told myself when reality presented something I didn&rsquo;t have a place for: <em>it&rsquo;s stress, it&rsquo;s tiredness, there&rsquo;s an explanation, I just don&rsquo;t have it yet.</em></p>
+  <p>In the morning the sentence was still there. Exactly as I had left it. The handwriting had not changed back overnight the way I had half-hoped it might.</p>
+  <p>I sat at the desk and wrote my own name in my own hand and compared the two. They were not the same hand.</p>
+  <p class="mc">(Okay.)</p>
+  <p class="mc">(Okay. I&rsquo;ll figure this out. I always figure things out.)</p>
+  <p>I said it until I believed it, which took longer than usual. Then I got dressed and went to school and performed a normal day with the thoroughness of someone who understood that performance was now load-bearing.</p>
+  <p class="beat">On the way home, for the first time, I felt watched from inside my own body.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 6: Ch 5 -->
+  <div class="page" id="page-6">
+    <div class="page-inner">
+<div class="act-break">
+  <span class="act-num">Act II</span>
+  <span class="act-name">Residue</span>
+  <span class="act-theme">You cannot erase a self</span>
+</div>
+
+<article class="chapter" id="ch5">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Five</span>
+    <h2 class="ch-title">Echoes</h2>
+  </div>
+
+  <p>The handwriting came back. Not every day. Enough.</p>
+  <p>In the margins of my notes: corrections, additions, observations. Always accurate. Always in that hand that was almost mine but colder, more angular, as though written by someone who had learned my penmanship from watching rather than from being me. The content shifted over time. At first it was only academic. Then it became something else.</p>
+
+  <p class="eerie">You flinched when father touched your shoulder. He noticed. He didn&rsquo;t say anything because he&rsquo;s kind. That&rsquo;s the difference between us. He was always the one people wanted to protect.</p>
+
+  <p class="eerie">You answered Old Friend A wrong today. The real answer was funnier. He would have known that. You don&rsquo;t know that.</p>
+
+  <p class="eerie">I&rsquo;m not haunting you. I want to be clear about that. I don&rsquo;t know what this is either. But I am here and you know I&rsquo;m here and I think that&rsquo;s going to be a problem for you.</p>
+
+  <p>I started the journal on a Thursday. A separate notebook, bought with my own money, kept in the back of the desk drawer. Date, time, observation. I was going to document this methodically. I was going to find the mechanism and address it. I was not going to let something I didn&rsquo;t understand yet become something that undid me.</p>
+  <p>The teacher incident happened the following Monday.</p>
+  <p>I was mid-answer in class when he held up his hand.</p>
+  <p>Teacher: &ldquo;You already told me this. Yesterday. After class. You came to my desk and explained this exact sequence for almost ten minutes.&rdquo;</p>
+  <p>I had not stayed after class. I had gone directly home, eaten dinner, studied, gone to bed. My memory of the afternoon was complete and unambiguous.</p>
+  <p>Me: &ldquo;I think there might be a misunderstanding, sir.&rdquo;</p>
+  <p>Teacher: &ldquo;I remember it very clearly.&rdquo;</p>
+  <p>The classroom was quiet. Twenty faces waiting. I kept my expression neutral because the alternative was letting the thing behind my face show, and I was not yet ready to name what the thing behind my face was.</p>
+  <p class="mc">(Something was at that desk yesterday. In my body, with my voice, explaining things I would have explained exactly that way. And I was not there for it. I was somewhere else. Which means for some portion of yesterday afternoon, I was not the one driving.)</p>
+  <p>Me: &ldquo;I apologize for the confusion, sir.&rdquo;</p>
+  <p>Then Old Friend A was mid-sentence about something and I answered the question before he finished it. Clear and correct. As though I had heard it before. Because some part of me had &mdash; some part of me that listened to things before I did, that watched what was coming before I could see it.</p>
+  <p>Old Friend A: &ldquo;How did you know what I was going to say?&rdquo;</p>
+  <p>Me: &ldquo;Lucky guess.&rdquo;</p>
+  <p>That night in the journal, I wrote for a long time. Then I read the last entry back and the handwriting on the final two lines was not mine.</p>
+
+  <p class="eerie">You should be more scared than you are. I&rsquo;m not saying that to be cruel. I&rsquo;m saying it because the fact that you&rsquo;re not scared enough is probably going to cost you.</p>
+
+  <p>I stared at those two lines for a very long time. Then I wrote in my own hand directly beneath them:</p>
+  <p class="eerie" style="border-left-color:var(--red-mid)">What do you want.</p>
+  <p>I waited.</p>
+  <p>No answer came that night. But in the morning, the journal had one new line.</p>
+  <p class="eerie">That&rsquo;s a better question than &ldquo;what are you.&rdquo; I&rsquo;ll give you that.</p>
+  <p class="beat">He was learning how to talk to me. That was the part that kept me awake that night.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 7: Ch 6 -->
+  <div class="page" id="page-7">
+    <div class="page-inner">
+<article class="chapter" id="ch6">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Six</span>
+    <h2 class="ch-title">The Reflection Delay</h2>
+  </div>
+
+  <p>Saturday morning. Half awake. The bathroom. Brush teeth, look up.</p>
+  <p>My hand was down. Mouth closed. Arm at my side.</p>
+  <p>In the mirror, the reflection was still brushing.</p>
+  <p>Three full seconds of it &mdash; slow, deliberate circles, completely unaware that I had stopped. Then it caught up. Hand down. Perfectly synchronized. Looking back at me with my own eyes, exactly as it always had.</p>
+  <p>I stood completely still and looked at my own face in the glass and tried to determine which of us was doing the looking.</p>
+  <p class="mc">(Visual lag. Sleep deprivation. The brain processing input in the wrong order. There is a documented phenomenon. This is that phenomenon.)</p>
+  <p>I rinsed and left and did not look back.</p>
+  <p>Three days later I was getting dressed. I reached for my collar. And in the mirror, the reflection turned its head.</p>
+  <p>Before I did.</p>
+  <p>Not a lag. An anticipation. It knew I was going to turn and it turned first, as though it were making a decision rather than reflecting one. I froze. It froze too. We stood looking at each other and the image in the glass was perfectly still and perfectly normal and I could not stop seeing the moment before it, the fraction of a second where the reflection acted and I followed.</p>
+  <p class="mc">(He is in there. He is in the glass because he is in me and the reflection is reflecting both of us and sometimes he gets there first. He doesn&rsquo;t speak yet. He just&hellip; moves. Sometimes before I do.)</p>
+  <p>I bought a cloth and covered the bedroom mirror that evening. Mother asked why.</p>
+  <p>Me: &ldquo;The light angle gives me headaches in the morning.&rdquo;</p>
+  <p>She accepted this. I was grateful for how much people will accept when the alternative requires them to worry.</p>
+  <p>I started avoiding the bathroom mirror too. I got very good at brushing teeth by feel. I developed the habit of looking at my hands while I washed them rather than up at the glass.</p>
+  <p>Every night before bed I wrote in the journal: <em>reflection: no change.</em></p>
+  <p>What I meant was: <em>it has not looked back at me with its own expression yet. It has not smiled when I wasn&rsquo;t smiling. I am counting the nights it has not done this because when I stop being able to write that it will be the clearest evidence yet of how bad things have become.</em></p>
+  <p>But I did not write all of that. I just wrote: <em>reflection: no change.</em></p>
+  <p class="mc">(He is getting stronger. I felt it when I got to the desk chair this morning &mdash; the slight resistance, like moving through water. As though my body considered two directions before choosing mine. He couldn&rsquo;t hold it. But he considered it.)</p>
+  <p class="beat">I started doing things faster. Making decisions before I could feel him considering them. Preempting. Racing myself to my own body.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 8: Ch 7 -->
+  <div class="page" id="page-8">
+    <div class="page-inner">
+<article class="chapter" id="ch7">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Seven</span>
+    <h2 class="ch-title">Memory Bleed</h2>
+  </div>
+
+  <p>The dreams started and they were not nightmares. That was the worst part. They were warm.</p>
+  <p>His grandmother&rsquo;s birthday. A park route he had memorized before he could read. An argument with his father over curfew where his father eventually laughed and gave in. I woke from these not with the gasping disorient of nightmares but with the slow, heavy surfacing of someone who had been somewhere real. The memories settled in my body the way lived memories do, with texture and weight and the particular kind of certainty that belongs only to things that actually happened.</p>
+  <p>By the end of the second week, I knew things I had no right to know.</p>
+  <p>I ducked slightly passing a shelf in the school library without thinking about it. The broken bracket that would have caught my sleeve was exactly where I knew it would be, because he had caught his sleeve on it a dozen times, and now so had I, in a memory I hadn&rsquo;t lived. I knew which corner of the cafeteria had the bad lighting and which teacher preferred questions before class rather than after. I knew the specific pitch of Old Friend A&rsquo;s laugh when something genuinely surprised him versus when he was being polite.</p>
+  <p>Mother served something at breakfast and I ate it without comment.</p>
+  <p>Mom: &ldquo;You used to make a face every time I made this. You called it &lsquo;punishment food.&rsquo;&rdquo;</p>
+  <p>Me: &ldquo;I don&rsquo;t remember that.&rdquo;</p>
+  <p>And I genuinely did not. Whatever visceral aversion he had built for it was not in the memories that arrived. I had received the route and the library shelf and the friends&rsquo; laughs, but not the tastes and the textures, not the embodied things. His memories came without his body&rsquo;s reactions. They were his mind without his nerves. His map without his feet.</p>
+  <p>One afternoon at the bench, Old Friend A started complaining and I said the exact response before I consciously planned it. The right timing, the right delivery, the specific joke that landed. Old Friend A went quiet for a second and then laughed &mdash; a real laugh, the surprised kind.</p>
+  <p>Old Friend A: &ldquo;You haven&rsquo;t said that in months. I thought you retired it.&rdquo;</p>
+  <p class="mc">(I didn&rsquo;t say it. He said it. Through me. I was the medium and he was the message and it lasted about two seconds and neither of them noticed the seam where he ended and I began because there was no seam. Not anymore. Not in those two seconds.)</p>
+  <p>That night I wrote in the journal and the entry was mine until the last paragraph, where the handwriting shifted.</p>
+
+  <p class="eerie">You used my joke. I&rsquo;m not angry. I just want you to understand what that means. The things you know that you shouldn&rsquo;t &mdash; routes, habits, punch lines &mdash; those are mine. You didn&rsquo;t earn them. You absorbed them. And you&rsquo;re going to keep absorbing them. This is what &lsquo;sharing a body&rsquo; actually means. Not just the space. Everything.</p>
+
+  <p>I read that three times. Then I wrote beneath it:</p>
+  <p class="eerie" style="border-left-color:var(--red-mid)">Does that mean I&rsquo;m losing myself? Or gaining you?</p>
+  <p>The answer came in the morning.</p>
+  <p class="eerie">Yes.</p>
+  <p class="beat">One word. No elaboration. As though the question was not complicated enough to require one.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 9: Ch 8 -->
+  <div class="page" id="page-9">
+    <div class="page-inner">
+<article class="chapter" id="ch8">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Eight</span>
+    <h2 class="ch-title">Compression</h2>
+  </div>
+
+  <p>I sat at the desk for forty minutes before I picked up the pen. This was not reluctance. It was the specific dread of writing something that, once written, cannot be unwritten. Once I put it on the page I owned it. Once I owned it I had to act on it.</p>
+  <p>I picked up the pen.</p>
+
+  <p class="eerie" style="border-left-color:var(--red-mid)">He is not haunting me. Haunting is something that happens from outside. What is happening is inside. He didn&rsquo;t go away when his body died. He came with me through the mirror. He is in here. We are in the same body, in the same space, and the space is his original space, which means I am the one who doesn&rsquo;t fit. I removed him from his life. I did not remove him from himself. I just removed the space between us. We are the same location now. One body. Two people. And one of us is getting stronger.</p>
+
+  <p>I put the pen down. Read what I&rsquo;d written. The handwriting was entirely mine. No intrusions this time. He had let me write it myself because he wanted me to own it. That was the kind of cruelty I was beginning to recognize as his style &mdash; quiet, patient, surgical.</p>
+  <p>The impulses had been building for weeks. I would reach for something and feel a second opinion about which hand to use. I would form a sentence and feel an alternative version rising beneath it. They were not voices. There was no voice. It was more like being a river with a current running through it that was not quite the same current. Sometimes the currents aligned. Sometimes one pushed against the other and you could feel the friction without being able to see it.</p>
+  <p class="mc">(I am not losing my mind. I know exactly what is happening. What is happening is that there are two of us in here and we are not compatible and neither of us can leave.)</p>
+  <p>I wrote one more line in the journal.</p>
+  <p class="eerie" style="border-left-color:var(--red-mid)">I didn&rsquo;t remove him. I removed the space between us. And I don&rsquo;t know what happens next to either of us.</p>
+  <p>The handwriting on the word <em>either</em> shifted, almost imperceptibly, before shifting back.</p>
+  <p>He was reading along. He always read along.</p>
+  <p class="mc">(I know you&rsquo;re reading this.)</p>
+  <p>I didn&rsquo;t write that in the journal. I thought it very clearly and directly, aimed inward, the way you aim a thought at a person in the room with you. A beat of silence. Then the faintest sensation of being acknowledged.</p>
+  <p>Not words. But not nothing either.</p>
+  <p class="beat">The first time we communicated directly. Neither of us chose it. Neither of us was ready.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 10: Ch 9 -->
+  <div class="page" id="page-10">
+    <div class="page-inner">
+<article class="chapter" id="ch9">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Nine</span>
+    <h2 class="ch-title">Internal Battle: Part 1</h2>
+  </div>
+
+  <p>Once he knew that I knew, the pretense ended.</p>
+  <p>The handwriting in the margins stopped. The subtle pushes against my decisions stopped. What replaced them was direct, immediate, and considerably harder to manage.</p>
+  <p>He tried to take the body.</p>
+  <p>The first time was in the morning. I was reaching for my school bag and the arm moved wrong &mdash; not toward the bag but toward the desk, deliberate and purposeful, going somewhere I hadn&rsquo;t decided to go. I pulled back. There was a moment of genuine resistance, two intentions occupying the same limb, the physical sensation of it like trying to open a door that is also being pushed shut from the other side. Then my direction won. The arm went to the bag.</p>
+  <p>I stood in the middle of the room breathing hard.</p>
+  <p class="mc">(He&rsquo;s trying to take control. Actually trying. Not just influencing. Not just writing in margins. He wants the body.)</p>
+  <p>He didn&rsquo;t get it. Not for lack of trying but because the body wasn&rsquo;t his anymore. He could get a limb. He could get a few seconds. But he couldn&rsquo;t hold it.</p>
+  <p>Not yet.</p>
+  <p>The attempts kept coming. On the way to school: the legs wanted to turn left when I turned right, and I felt the disagreement in my knees. During class: my hand began writing something I hadn&rsquo;t thought of, and I pressed the pen hard against the paper to reassert. During dinner: my mouth almost said something that would have confused my parents badly, and I caught it just in time and took a long drink of water.</p>
+  <p>The strain of it was exhausting in a way I had no framework for. This was not the exhaustion of effort or of stress. It was the exhaustion of having to consciously inhabit yourself. Of never, at any point, being able to simply <em>be</em> without checking that the self doing the being was you.</p>
+  <p>Dinner was harder than anything else. The family asked questions &mdash; ordinary ones, the conversational texture of an evening meal &mdash; and I had to answer them with part of my attention while the rest of my attention held the body&rsquo;s controls, felt for any drift, corrected for any push. I was monitoring two things simultaneously: the performance of a son at the table, and the quiet war beneath it. Father made a joke. I laughed exactly one beat late. Mother watched my face for half a second longer than usual.</p>
+  <p class="mc">(She noticed. She&rsquo;ll attribute it to tiredness. She usually does. I need to be better tomorrow. I need to be more present. But being more present requires attention I am currently spending on not letting someone else use my hands at the dinner table.)</p>
+  <p>The mental toll compounded. By the end of the week I was making errors in class. Small ones, uncharacteristic. My concentration fractured at unpredictable moments. I arrived at the ends of conversations with no memory of the middles, which was visible in ways I couldn&rsquo;t fully manage.</p>
+  <p class="mc">(He&rsquo;s wearing me down. He can&rsquo;t take the body directly but he&rsquo;s weakening it. Every failed attempt costs both of us something and he knows I can&rsquo;t afford to keep paying.)</p>
+  <p>I started sleeping less. Specifically to stay sharp. Specifically to prevent him from using the gap of unconsciousness to do things I wouldn&rsquo;t know about. This was not a sustainable strategy, which I knew, but sustainability had become a secondary concern.</p>
+  <p>The necklace was still on the desk, where it had been since the night I thought I&rsquo;d destroyed it and found I hadn&rsquo;t. I had put a book on top of it. I had not moved the book. But I was aware of it the way you are aware of a bruise &mdash; not constantly, but whenever something brushed near it.</p>
+  <p>By Thursday of that week something happened that I could not categorize as manageable.</p>
+  <p>It started in class. A question directed at me, ordinary, the kind I had always answered without effort. I opened my mouth and nothing came. Not hesitation &mdash; absence. The words that should have been there were not there. The class was quiet. The teacher waited. I sat in the chair and felt the body as something I did not have secure access to, as something currently occupied by competing claims that were both refusing to speak.</p>
+  <p>The teacher moved on. I sat there for the rest of the period with my hands flat on the desk and focused on the single, narrowing task of remaining present in myself.</p>
+  <p>On the way home I stopped on the street with the broken tile and could not continue walking for approximately two minutes. Not because of anything outside. Because continuing required deciding which direction was mine and both directions felt equally wrong, equally unfamiliar, equally someone else&rsquo;s.</p>
+  <p>I stood on the street and breathed and told myself: <em>I am here. I chose this. I am not going anywhere. I am the one in control.</em></p>
+  <p>The words had been reliable once. They were less reliable now.</p>
+  <p>I got home. I went upstairs. I sat on the floor of the bedroom with my back against the bed and did not move for a long time. Not writing. Not thinking. Not managing anything. Just sitting, with the specific quality of someone who has stopped being able to perform even the minimum and is waiting to find out whether that is temporary.</p>
+  <p>Mother knocked on the door after a while.</p>
+  <p>Mom: &ldquo;Dinner&rsquo;s ready.&rdquo;</p>
+  <p>Me: &ldquo;I&rsquo;m not hungry tonight. Sorry.&rdquo;</p>
+  <p>A pause.</p>
+  <p>Mom: &ldquo;Are you sure? You haven&rsquo;t eaten since&mdash;&rdquo;</p>
+  <p>Me: &ldquo;I&rsquo;m sure. I just need to rest.&rdquo;</p>
+  <p>Another pause. Longer. Then the sound of her footsteps going back down the hall, quieter than her footsteps usually were, the specific quiet of someone moving carefully around something they don&rsquo;t want to disturb.</p>
+  <p class="mc">(She is worried. She has been worried for weeks. She keeps the worry small and available, ready to be offered when I give her an opening, which I don&rsquo;t. I have not given her a real opening since the photo album. I have been managing distance instead of distance managing itself, and I am now sitting on a floor because I could not continue walking down a street, and the only reason I am not more alarmed about that is that I don&rsquo;t have the capacity for alarm right now either.)</p>
+  <p>I sat on the floor until the house went quiet. Then I got up. Got into bed. Lay in the dark.</p>
+  <p>The thought arrived without announcement: <em>I might lose this. Not because someone finds out. Because I run out.</em></p>
+  <p>I had not thought that before. I had thought about exposure, about the twin, about the cracks, about all the external threats. I had not thought about the possibility that the thing most likely to end this was simply the accumulation of cost on a person who had finite capacity for it. I had been thinking about this as a problem to be solved. It was also something happening to a body and a mind that had limits, and those limits were visible from where I was sitting, and the visibility of them was new.</p>
+  <p>One evening after dinner I sat at the desk and thought at him, directly, the way I had learned to:</p>
+  <p class="mc">(You can&rsquo;t hold it. It cuts off every time. You know that.)</p>
+  <p>The answer came as a sensation rather than words. Something between amusement and patience. The feeling of someone who has decided to wait you out because they know something you don&rsquo;t, and they are comfortable in the knowing, and they have decided that letting you figure it out yourself will be instructive.</p>
+  <p class="beat">I did not sleep well that night. He did not need sleep. That was the first asymmetry I had not accounted for.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 11: Ch 10 -->
+  <div class="page" id="page-11">
+    <div class="page-inner">
+<article class="chapter" id="ch10">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Ten</span>
+    <h2 class="ch-title">Internal Battle: Part 2</h2>
+  </div>
+
+  <p>Two weeks into the open war, he found the method.</p>
+  <p>It was not strength. It was subtlety. He could not overpower me when I was alert and rested and fully engaged with the act of being here. But when I was stressed &mdash; genuinely stressed, the kind that made everything loosen its grip slightly &mdash; the resistance dropped. The door I held shut by vigilance cracked open. And he was through it before I could close it again.</p>
+  <p>The bad day that gave him his first real foothold was ordinary in its badness. An exam result lower than expected. A comment from father at dinner that was kind but landed somewhere tender. And, between those two: an encounter with Old Friend B that I am still turning over because of what it showed me about how far things had slipped without my noticing.</p>
+  <p>He had found me in the hallway after lunch, which meant he had looked for me, which meant he had made a decision to do this.</p>
+  <p>Old Friend B: &ldquo;Hey. Can we talk for a second?&rdquo;</p>
+  <p>Me: &ldquo;Sure.&rdquo;</p>
+  <p>Old Friend B: &ldquo;I sent you three messages this week. You left them on read.&rdquo;</p>
+  <p>I had not left them on read deliberately. I had read them and then something in the management of the day had consumed whatever I would have used to respond, and by the time I remembered, responding felt like trying to reopen a window that had already closed.</p>
+  <p>Me: &ldquo;I&rsquo;m sorry. I&rsquo;ve been&mdash;&rdquo;</p>
+  <p>Old Friend B: &ldquo;Busy, I know. You&rsquo;ve been busy for months. I just &mdash; I don&rsquo;t know what to do with you lately. I don&rsquo;t know if you want me around or if I&rsquo;m just someone you&rsquo;re tolerating until whatever you&rsquo;re dealing with goes away.&rdquo;</p>
+  <p>He said it without anger. That was the thing that made it hard to deflect. Anger would have been easier. This was just someone telling me something true about how they felt, with the specific vulnerability of someone who had decided the truth was worth the risk of saying it.</p>
+  <p class="mc">(He is asking me if I still want him here. The answer is yes. The answer is one of the few clear yeses I have. But I cannot explain why the answer is yes in a way that doesn&rsquo;t also require explaining everything else, and everything else is not something I can explain.)</p>
+  <p>Me: &ldquo;I want you around. I&rsquo;m sorry I haven&rsquo;t shown it.&rdquo;</p>
+  <p>Old Friend B: &ldquo;Okay.&rdquo; He looked at me for a moment. &ldquo;Are you going to tell me what&rsquo;s actually going on?&rdquo;</p>
+  <p>Me: &ldquo;Not yet. Maybe eventually.&rdquo;</p>
+  <p>He nodded slowly. The nod of someone accepting something they&rsquo;re not satisfied with because the alternative is pushing too hard and he didn&rsquo;t want to push too hard.</p>
+  <p>Old Friend B: &ldquo;Okay. But I&rsquo;m still here. Even when you&rsquo;re&hellip; whatever this is.&rdquo;</p>
+  <p>He left. I stood in the hallway and understood, with a clarity that the rest of the day&rsquo;s noise had not allowed, that what he had just said was one of the most generous things anyone had said to me in this world, and I had given him almost nothing in return, and he was still going to be there, and the fact that he was going to be there was something I did not deserve and would probably lose anyway through the accumulation of all the things I could not tell him.</p>
+  <p>By the time I got to my room that evening I was frayed in a way that showed in the body&rsquo;s grip on itself.</p>
+  <p>I sat down at the desk to write in the journal. The next thing I was aware of was standing at the window in the dark with my hand against the glass, looking at the street below, with no memory of getting up.</p>
+  <p>He had had the body for approximately forty minutes.</p>
+  <p>I checked the journal. There was an entry in his handwriting:</p>
+
+  <p class="twin"><span class="twin-label">Him</span>Forty-three minutes. I didn&rsquo;t do anything with it. I just wanted you to know I could. I walked to the window. I looked at the street. I thought about how it used to be mine. How I used to look at this same street from this same window and it was just &mdash; mine. No maintenance required. No war. Just mine. I wanted to feel what that felt like again. Even for forty-three minutes. I think you understand that, actually. Better than you&rsquo;d like to.</p>
+
+  <p>I read that three times. Then I wrote beneath it:</p>
+  <p class="eerie" style="border-left-color:var(--red-mid)">If you do anything that makes the family suspicious I will find a way to make this worse for you.</p>
+  <p>His response came in the morning, while I was getting dressed and trying not to look at the covered mirror:</p>
+  <p class="twin"><span class="twin-label">Him</span>You can&rsquo;t make things worse for me. I&rsquo;m already dead and sharing a body with my killer. You, on the other hand, have a family downstairs eating breakfast. You have things to lose. I don&rsquo;t. Keep that asymmetry in mind when you&rsquo;re deciding how to talk to me.</p>
+  <p>He was right. That was the infuriating part. He had nothing left to protect. He was already past every threshold of loss. I was the one maintaining a performance, a cover, a life that required his cooperation or at least his non-interference to continue. My vulnerability was my investment in the outcome.</p>
+  <p>I started managing my emotional state the way you manage an injury in a location you cannot stop using. Carefully. Constantly. Limiting the situations that could compromise it. I slept at consistent times. I ate well. I avoided situations with unpredictable emotional weight. I became, in the pursuit of self-preservation, a very well-regulated person.</p>
+  <p>The family noticed this too, but differently from before. Before, the inconsistencies had been of personality &mdash; the wrong reaction, the wrong preference. Now they were of availability. I was present at the table but not fully present. I answered correctly but slightly late. I smiled at the right things but the smile didn&rsquo;t go all the way in.</p>
+  <p>Mother, one evening: &ldquo;Are you sleeping well? You seem tired in a way that sleep doesn&rsquo;t fix.&rdquo;</p>
+  <p>Me: &ldquo;I&rsquo;m fine. School is just busy.&rdquo;</p>
+  <p>She accepted this. She was very good at accepting things. But I noticed she refilled my tea without being asked, and she watched me over the rim of her cup in the way parents watch when they have decided not to push but have not decided not to worry.</p>
+  <p class="mc">(I am losing the dinner table. Not because anyone found out. Because managing him takes the part of me that used to be relaxed at dinner, and relaxed is what the table needs, and now I bring something different and they can feel the difference even when they can&rsquo;t name it.)</p>
+  <p>He adapted too. Without the stress trigger being as available, he found smaller gaps. Moments of genuine distraction. Moments when my attention was fully occupied elsewhere and the grip on the body loosened by default. He used them not to act dramatically but to establish presence. A sentence inserted into a classroom discussion that I hadn&rsquo;t planned. A detour on the walk home that I became aware of only when the street was wrong. Small enough that each instance was explainable. Together, they were building something.</p>
+  <p>Father asked one morning if I remembered a conversation from the previous evening. I had no memory of it. I said I must have been half-asleep, which was the kind of explanation that works once. Mother mentioned I had said something strange to her about the garden &mdash; something fond and specific, about a plant she&rsquo;d had since before he was born &mdash; and she had been pleased by it and a little surprised. I had not been in the kitchen when this apparently happened.</p>
+  <p>He was talking to them. When he had the body, he wasn&rsquo;t wasting it on gestures. He was talking to my family, in my voice, building a version of me in their memories that I couldn&rsquo;t fully see or track or correct for. A version that knew about the garden. That had the right warmth at the right moments. That was, perhaps, more like the person they remembered than I had managed to be.</p>
+  <p class="mc">(He&rsquo;s not trying to expose me. He&rsquo;s trying to reclaim them. He&rsquo;s trying to be their son again, in whatever increments are available to him. And the increments are working. The look on mother&rsquo;s face when she told me about the garden comment. That look was not meant for me.)</p>
+  <p>I wrote in the journal that night:</p>
+  <p class="eerie" style="border-left-color:var(--red-mid)">You&rsquo;re trying to surface. To exist to them in the spaces I leave. To be present to them in ways I can&rsquo;t manage anymore.</p>
+  <p>His answer came the next morning, and it was one line, and it was the line I least wanted to read:</p>
+  <p class="twin"><span class="twin-label">Him</span>I&rsquo;m trying to go home. You of all people should understand that.</p>
+  <p class="beat">I sat with that for a long time. The journal open on the desk. The house quiet around me. His answer sitting on the page in his handwriting, which looked more like mine every week, which was its own particular horror.</p>
+  <p class="beat">I understood exactly. That was the problem.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 12: Ch 11 -->
+  <div class="page" id="page-12">
+    <div class="page-inner">
+<article class="chapter" id="ch11">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Eleven</span>
+    <h2 class="ch-title">The Other</h2>
+  </div>
+
+  <p>Old Friend B found me at the bench on a Thursday.</p>
+  <p>Not at lunch &mdash; after school, which was unusual. He sat down without asking if it was okay, which meant he had been thinking about this for long enough that he&rsquo;d moved past the stage of asking. He had a specific look, the one he got when he had rehearsed something and was now committed to saying it regardless of how it landed.</p>
+  <p>Old Friend B: &ldquo;I want to ask you something and I want you to actually answer it. Not the answer you give when you&rsquo;re trying to make someone stop worrying.&rdquo;</p>
+  <p>Me: &ldquo;Okay.&rdquo;</p>
+  <p>Old Friend B: &ldquo;What happened to you?&rdquo;</p>
+  <p>He said it simply. No preamble. Just the question, direct, aimed at me the way he&rsquo;d aimed questions at me since Chapter Three when he first said I felt like I was somewhere else even when I was right here. He had been building toward this for months. He had been patient about it. The patience was ending.</p>
+  <p>Old Friend B: &ldquo;Not what&rsquo;s wrong at school. Not stress or growing up or whatever. Something happened. I can see it. I&rsquo;ve been seeing it since the start of the semester and I kept thinking you&rsquo;d come back but you didn&rsquo;t come back, you got further away, and now it&rsquo;s&hellip; I don&rsquo;t know. I don&rsquo;t know who I&rsquo;m talking to half the time. And I miss him. I miss whoever you were. Is that stupid?&rdquo;</p>
+  <p>He looked at me with the particular steadiness of someone who has decided that the truth is worth the risk of being dismissed for saying it. And then he did something he almost never did: he looked away. Down at the bench surface. Because the thing he had said was exposing and he had said it anyway and now he was waiting to see whether it had been worth it.</p>
+  <p class="mc">(He misses him. He is sitting on this bench missing a person who is dead, telling the wrong person about it, and he doesn&rsquo;t know that&rsquo;s what he&rsquo;s doing. He is grieving, in the specific form of grief that doesn&rsquo;t know it&rsquo;s grief because the person is still standing there saying the right words at the right intervals. And the care in it &mdash; that he showed up and said this out loud even knowing I might deflect &mdash; that is exactly the kind of care that was aimed at the person I killed. And I am receiving it wrong, in the wrong body, with the wrong history, and there is no way to tell him any of that.)</p>
+  <p class="mc">(I want to tell him. That is the part I cannot afford to look at directly. I want to sit on this bench and say: you&rsquo;re right. Something happened. I am not who you think I am. He is gone and I am so sorry and I don&rsquo;t know how to fix it and I am so tired of this.)</p>
+  <p>Me: &ldquo;It&rsquo;s not stupid.&rdquo;</p>
+  <p>Old Friend B looked back up.</p>
+  <p>Me: &ldquo;I&rsquo;m sorry. For all of it. For being away. For the messages. For &mdash;&rdquo; I stopped. There was no ending to that sentence that was honest. &ldquo;I can&rsquo;t explain what happened. I know that&rsquo;s not what you want to hear. But I want you to know it&rsquo;s not about you. You didn&rsquo;t do anything wrong. You&rsquo;ve done everything right.&rdquo;</p>
+  <p>He was quiet for a moment.</p>
+  <p>Old Friend B: &ldquo;Okay.&rdquo; Then: &ldquo;I&rsquo;m still here. That option is still open. Whenever you want to use it.&rdquo;</p>
+  <p>He got up and left. I stayed on the bench until the school grounds emptied around me. The afternoon light went long and thin across the concrete and I sat in it and let myself feel, for the first time without managing it, the full weight of what the bench represented.</p>
+  <p class="mc">(I chose this life because I wanted people in it. People who would notice. People who would stay even when I was difficult. And I have that person, right here, and I have never been further from being able to use it. The thing I killed someone for is the thing I cannot have. That is not a new understanding. But sitting here, after what he just said, it is the first time the understanding has felt like weight in my chest rather than a conclusion in my head. Those are different things. I did not know they were different until right now.)</p>
+  <p>I walked home. Inside me, he was quiet &mdash; the twin, listening from wherever he lived in the body&rsquo;s interior, silent with the quality of someone who recognized something and was not sure what to do with the recognition.</p>
+  <p class="twin"><span class="twin-label">Him</span>He was my friend first.</p>
+  <p class="mc">(I know.)</p>
+  <p class="twin"><span class="twin-label">Him</span>He would have done the same for me. He did do the same for me. Before.</p>
+  <p class="mc">(I know that too.)</p>
+  <p class="twin"><span class="twin-label">Him</span>He deserves the truth.</p>
+  <p class="mc">(Everyone I care about deserves the truth. That has nothing to do with whether I can give it to them.)</p>
+  <p>Neither of us said anything after that. We walked the rest of the way home in the silence of two people who have been reminded of something they share that is not the war.
+
+  <div class="brk">&bull; &bull; &bull;</div>
+
+  <p>We were both in the body when the other version appeared. That was becoming more normal &mdash; both present, neither fully dominant, a kind of tense shared occupancy that cost me energy and, I suspected, frustrated him enormously. The walk home. The usual route. The street with the broken tile.</p>
+  <p>He was standing across the road.</p>
+  <p>My face. My height. My build. Completely still on the opposite pavement, looking directly at us as though he had been waiting there for some time and had already decided not to run.</p>
+  <p>I stopped. Inside me, he stopped too &mdash; the simultaneous arrest, both of us recognizing the same impossible thing at the same moment, neither of us having a word for it.</p>
+  <p>The figure across the street was afraid. Not threatened. Not aggressive. Afraid with the settled quality of someone who has been afraid for so long it has become structural &mdash; built into the posture, into the way he held his shoulders already braced, into the eyes that were very still in a face that was trying not to show anything.</p>
+  <p>And then he walked away. Quickly. Head down.</p>
+  <p>We stood at the corner for a moment. Then I started walking. He didn&rsquo;t push for control. He was too occupied with what we had both just seen.</p>
+  <p>That night the journal entry was mine until it wasn&rsquo;t:</p>
+  <p class="eerie" style="border-left-color:var(--red-mid)">There is another one. My face. He was afraid. He is in the same position you were &mdash; someone crossed over into his world and took his life. Another artifact. Another crossing. The necklace said nothing about where displaced people go. I assumed they just &mdash; stopped. Were absorbed somewhere. Ceased. I did not think about what it would mean for them to land somewhere real and keep existing in it.</p>
+  <p>His handwriting cut into the paragraph:</p>
+  <p class="twin"><span class="twin-label">Him</span>I didn&rsquo;t know either. I thought the same thing you thought &mdash; that displacement was clean. That the original just went somewhere unspecific and that was the end of it. The necklace let me believe that because I wanted to believe it. I think that is the thing about the artifact that neither of us understood until now: it doesn&rsquo;t lie. It just doesn&rsquo;t volunteer the parts you would prefer not to know.</p>
+  <p>We sat with that together &mdash; which was a strange thing to experience, sitting with something together. Two people in one body, sharing the same silence, both looking at the same wall, both turning over the same understanding. Not at peace. Not comfortable. But for one specific moment, genuinely in the same situation with the same information and the same unresolved feeling about what the information meant.</p>
+  <p class="mc">(For what it&rsquo;s worth. I didn&rsquo;t know displacing you would send you somewhere. I thought you&rsquo;d just stop. I was wrong. I&rsquo;m not sure that changes anything. But I was wrong about that specific part.)</p>
+  <p>A beat. Then, from him, in the space between thoughts rather than in the journal:</p>
+  <p class="twin"><span class="twin-label">Him</span>I know. That doesn&rsquo;t change what you did. But I know.</p>
+  <p class="beat">The most honest exchange we had ever had. Neither of us had chosen it. It had arrived because something outside us was bigger than the war between us, and for one moment the war had simply &mdash; paused.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 13: Ch 12 -->
+  <div class="page" id="page-13">
+    <div class="page-inner">
+<div class="act-break">
+  <span class="act-num">Act III</span>
+  <span class="act-name">Collapsing Reality</span>
+  <span class="act-theme">The graver consequences of what was chosen</span>
+</div>
+
+<article class="chapter" id="ch12">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Twelve</span>
+    <h2 class="ch-title">Lots of Me</h2>
+  </div>
+
+  <p>There was another one on Wednesday. Two more on Friday. By the following week I had counted seven.</p>
+  <p>They appeared in ordinary places at ordinary times, which made it worse. In the school corridor before disappearing around a corner that led nowhere. At the edge of the park. On the far side of the street outside the convenience store. Always the same: my face, my height, my build, wearing different clothes, carrying themselves with different postures. Each one distinct. Each one a separate person who had arrived in this world from somewhere else and was now stranded in it, wearing a face that nobody around them could see.</p>
+  <p>Only we could see them. I confirmed this carefully &mdash; watching other people&rsquo;s eyes, timing the moments when a version of me passed through crowded spaces. Nobody tracked them. Nobody adjusted. The ordinary world registered one set of people and we registered two layers, the visible and the underneath, and the underneath kept populating.</p>
+  <p class="twin"><span class="twin-label">Him</span>They can&rsquo;t see each other either. It&rsquo;s only from this body. From this specific position. I think it&rsquo;s the crossing that did it &mdash; the artifact sensitized us to the seams in a way regular people aren&rsquo;t. We used the necklace. We passed through. Now we can see what the passage left behind.</p>
+  <p>I started mapping them in the journal. Dates, times, locations. Distinguishing features: the one with the different gait, the one who looked older in a way that had nothing to do with years, the one who kept looking over his shoulder at something I couldn&rsquo;t locate. Each entry precise. Each entry easier to write than the last, which was itself a thing worth writing down.</p>
+  <p class="mc">(I am getting used to this. The seeing. The mapping. The categorization. I am becoming someone who can look at versions of his own face in distress and write about them in neat handwriting. I want to note that I am becoming this. I want to not lose track of the distance between who I was and what I am becoming.)</p>
+  <p>The family receded during this period in a way I only understood in retrospect. Not dramatically &mdash; no confrontation, no obvious rupture. I was still at the table. I still said the right things at dinner. But I was increasingly somewhere else even when I was present, because managing the cataloguing and the war with him and the monitoring of the cracks required the part of me that was actually engaged, and what the family got was the remainder. The performance without the person behind it.</p>
+  <p>Mother made a comment one evening, lightly, in the way she made comments she actually wanted me to hear but wasn&rsquo;t sure how to say directly: &ldquo;You seem very far away lately. Even when you&rsquo;re sitting right here.&rdquo;</p>
+  <p>Me: &ldquo;I&rsquo;m sorry. I&rsquo;m just preoccupied with something at school.&rdquo;</p>
+  <p>She nodded. She let it go. But she moved her chair slightly closer to mine for the rest of dinner, which was a thing she did, a small physical gesture of trying to reach someone who had gone distant, and I noticed it and could not receive it the way it was meant and could not explain why.</p>
+  <p>The number of versions kept growing. Two more the next day. Three the day after.</p>
+  <p>The first time a crack pulled me away from something real was on a Saturday. Father had suggested a drive &mdash; no particular destination, just the kind of outing that he used to do with him on weekends, apparently, and had been waiting for the right moment to propose again now that things seemed settled. I had said yes. I had genuinely wanted to say yes. We were in the car, the radio doing something quiet in the background, father easy and talkative in the way he got when he wasn&rsquo;t performing contentment but actually feeling it, and I was almost present, almost there, when a version appeared in the passenger side mirror.</p>
+  <p>Standing on the pavement we had just passed. Watching the car. Face exactly mine. Gone by the time I turned to check the actual window.</p>
+  <p>I spent the rest of the drive watching the mirrors. Not the road, not my father, not the easy Saturday afternoon that he had arranged and was now trying to share with a person who was no longer looking at him. When we parked for coffee he asked me something and I answered a second too late and the answer was wrong &mdash; not wrong factually, wrong in register, too clipped, the answer of someone managing an inner situation rather than being in an outer one &mdash; and he looked at his cup for a moment before changing the subject.</p>
+  <p>On the drive back he was quieter. Not hurt. Something more resigned than hurt. The specific quiet of someone who has extended something and received less than they hoped for and is deciding not to make an issue of it.</p>
+  <p class="mc">(He arranged that for me. He has been waiting for weeks to propose it and I could not be there for the whole of it because I was watching mirrors. He will not say that. He will tell himself I was tired or distracted and he will let it go and he will try again in a few weeks and I will manage to be slightly more present and he will accept slightly more presence as enough because he wants to. And slowly, over more Saturdays like this one, what he is willing to accept will adjust downward until it stops including things like drives with no particular destination.)</p>
+  <p>I wrote one line in the journal that evening. Not about the cracks, not about the twin, not about the version in the mirror.</p>
+  <p class="eerie" style="border-left-color:var(--red-mid)">I missed the drive. I was in the car the whole time and I missed it.</p>
+  <p>The world was fracturing in a specific way. A way that only we had the angle to see, and the seeing was starting to feel normal, and the feeling-normal was the part that frightened me most.</p>
+  <p class="beat">The fracturing was accelerating. And I was getting used to it. Both things at the same time.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 14: Ch 13 -->
+  <div class="page" id="page-14">
+    <div class="page-inner">
+<article class="chapter" id="ch13">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Thirteen</span>
+    <h2 class="ch-title">Crack in Reality</h2>
+  </div>
+
+  <p>The first crack appeared on a Monday, running from eye-level to the floor like something had struck the visible surface of the world from the other side and left a mark. Fine at the edges, slightly wider in the middle. Like a mirror that had been dropped but hadn&rsquo;t fallen yet.</p>
+  <p>On its far side: another version of me, looking back.</p>
+  <p>He could see me. That was new. Every other version I&rsquo;d catalogued had been unaware of our presence &mdash; we could see them, they registered us only as an anomaly at the edge of their attention. This one was looking directly at us. With recognition.</p>
+  <p>I reached toward the crack. My hand met resistance, then something gave, and my fingers were through it, and he reached back, and we touched. The texture of his hand was real.</p>
+  <p class="twin"><span class="twin-label">Him (inner)</span>Talk to him.</p>
+  <p>Me: &ldquo;Do you know what&rsquo;s happening?&rdquo;</p>
+  <p>Other: &ldquo;The cracks. Yes. I thought I was the only one who could see them.&rdquo;</p>
+  <p>Me: &ldquo;There are more of us. I&rsquo;ve counted at least fifteen.&rdquo;</p>
+  <p>The crack began to narrow &mdash; the interface mending itself, the pressure equalizing.</p>
+  <p>Other: &ldquo;I don&rsquo;t know how to stop it. I&rsquo;ve been trying to find &mdash;&rdquo;</p>
+  <p>Closed. My hand back on my side, cold, the contact gone.</p>
+  <p>The cracks multiplied after that. I began keeping a second section of the journal specifically for crack incidents: location, duration, who appeared on the other side. The cataloguing became a daily task. The daily task became routine. I recognized the routinization happening and wrote it down:</p>
+  <p class="eerie" style="border-left-color:var(--red-mid)">I am writing about cracks in reality the way I used to write about homework. With the same handwriting. The same organizational system. The same feeling of just getting it done so I can move on to the next thing. I think this is what it looks like when a person stops being shocked by something. I think I should be more disturbed by this than I am.</p>
+  <p>The cracks started reaching beyond versions of me. The professor, mid-lecture, with a fracture running across the whiteboard behind him and his double on the far side saying the opposite of everything he said. I sat in the front row managing two contradictory instructions from two versions of the same teacher, composing a response that somehow satisfied the one who could see me while the other one delivered his alternate reality to an audience that couldn&rsquo;t hear him.</p>
+  <p>I excused myself using roughly a third of my available attention. The rest was managing the crack.</p>
+  <p>On the way out of the building I passed Old Friend B in the hall. He stopped. There was a crack in the corner of the ceiling behind him, small, barely visible, already beginning to close. I watched it close while he was talking.</p>
+  <p>Old Friend B: &ldquo;Hey, are you okay? You look&hellip; I don&rsquo;t know. Like you just had some kind of shock.&rdquo;</p>
+  <p>Me: &ldquo;I&rsquo;m fine. Long class.&rdquo;</p>
+  <p>He looked at me for a second. Then past me, briefly, at whatever he thought might be behind me that had my attention. There was nothing there. Not to him. The crack had closed.</p>
+  <p>Old Friend B: &ldquo;We&rsquo;re going to the place after school today. Old Friend A, me, a few others. You should come. Actually come, not &lsquo;I&rsquo;ll think about it&rsquo; come.&rdquo;</p>
+  <p class="mc">(I want to go. That is the honest answer. I want to sit at a table with people who are not a problem to be managed and eat something and talk about nothing significant and just &mdash; be there. I have not done that in a very long time. I have not let myself want it in a very long time because wanting something I cannot have is a specific kind of expenditure I cannot currently afford.)</p>
+  <p>A second crack appeared, down the hall, near the exit. Wider. A figure on the other side &mdash; one of the mapped versions, the one with the different gait &mdash; visible through it.</p>
+  <p>Me: &ldquo;I can&rsquo;t today. I&rsquo;m sorry.&rdquo;</p>
+  <p>He exhaled. Not a sigh &mdash; something more controlled than a sigh, the careful breath of someone deciding not to say the thing they are thinking.</p>
+  <p>Old Friend B: &ldquo;Okay.&rdquo;</p>
+  <p>He walked away. I watched him go and then turned and dealt with the crack and the version in the hallway and then walked home alone, which was faster and more practical and cost exactly as much as it cost.</p>
+  <p class="mc">(He is trying to reach me and I keep giving him nothing to hold onto. He came to that bench. He said the honest thing. He showed up in the hallway and invited me directly, no buffer, no casual phrasing. And I keep not going. Not because I don&rsquo;t want to. Because the cracks are everywhere now and I can&rsquo;t leave them and I can&rsquo;t explain why I can&rsquo;t leave them, and eventually &lsquo;I can&rsquo;t today&rsquo; will stop being something he waits past.)</p>
+  <p class="twin"><span class="twin-label">Him</span>We caused this. The crossing punched a hole in whatever keeps realities separate. We sealed it when we came through, but not completely. And it&rsquo;s been widening ever since. Every version that arrives makes it worse. Every crack that opens makes room for another.</p>
+  <p class="beat">We had broken something much larger than either of us had understood. And we had been living in the breaking for months without knowing it was ours.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 15: Ch 14 -->
+  <div class="page" id="page-15">
+    <div class="page-inner">
+<article class="chapter" id="ch14">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Fourteen</span>
+    <h2 class="ch-title">Reality on the Verge of Collapse</h2>
+  </div>
+
+  <p>I was watching a version through a crack when he was killed.</p>
+  <p>The version was sitting on the park bench. A wide crack had been open between us for nearly two minutes &mdash; the longest yet &mdash; and we had been almost able to speak. I was leaning toward it when another figure stepped up behind the sitting one. I had no warning. The standing figure produced something I couldn&rsquo;t make out at this angle. The sitting version was simply &mdash; gone. No process. No transition.</p>
+  <p>What happened to the crack is harder to describe. It didn&rsquo;t narrow. It shattered &mdash; not physically, not with sound &mdash; in the way a mirror shatters when it finds the floor. A sudden fanning of fracture lines from a central point. And then it was sealed. Instantly. Completely. As though it had never been there.</p>
+  <p>I stood in the park in the thin afternoon light with that specific silence that follows a significant thing.</p>
+  <p class="mc">(When a version of me dies, the crack closes. Completely. Immediately. Cleaner than any natural closing I&rsquo;ve seen.)</p>
+  <p class="twin"><span class="twin-label">Him</span>One instance. Don&rsquo;t conclude from one instance.</p>
+  <p class="mc">(I&rsquo;m not concluding. I&rsquo;m observing. I&rsquo;m putting it in the journal.)</p>
+  <p>A week later the same thing happened with a double of someone else &mdash; a classmate I barely knew. The crack narrowed but did not fully close. A hairline fracture remained visible in the corner of the room for the rest of the day.</p>
+  <p class="mc">(Only my doubles&rsquo; deaths close the cracks completely. Others&rsquo; deaths close them partially. One instance is not data. Two is the beginning of a pattern. I am not certain yet. But I am less uncertain than I was.)</p>
+  <p>I said nothing to him about this. He would have a position on it immediately, and I was not ready for that conversation yet.</p>
+  <p>That evening, dinner. Father was talking about something at work &mdash; a small victory, the specific pleasure of competence being recognized. Mother was asking the right questions, listening in the attentive way that meant she genuinely cared about the answer. I was at the table. I was present in the physical sense. But there was a crack in the corner of the kitchen &mdash; a small one, barely visible &mdash; and I was monitoring it, and the monitoring took the part of me that would have actually been present for the conversation.</p>
+  <p>Father: &ldquo;&mdash; and so in the end they went with the original plan, which was the right call. Don&rsquo;t you think?&rdquo;</p>
+  <p>Me: &ldquo;Yeah. Definitely.&rdquo;</p>
+  <p>A beat. Father nodded. Mother looked at her plate. They both accepted the answer. But the conversation moved on in a way that quietly excluded me &mdash; not deliberately, not unkindly, just naturally, the way conversations move when one person at the table is not fully in it. They talked to each other for the rest of dinner. I ate and monitored the crack until it closed, and by the time it closed the meal was done and the moment was done with it.</p>
+  <p class="mc">(I am not losing this family because anyone discovered anything. I am losing it because managing the invisible work makes me absent, and absence is the thing families cannot sustain. They will keep trying to include me. They will keep making space. But eventually the space will stop being offered because there is only so many times you extend something and get nothing back before you stop extending it.)</p>
+  <p class="mc">(I killed someone to have this dinner table. And the thing I used to kill him with is now the thing that is taking the dinner table away from me. One piece at a time. Invisibly. Without anyone being able to name what is happening.)</p>
+  <p>I did not write in the journal that night. I sat at the desk with it open in front of me and looked at the blank page for a long time and could not make anything happen. Not a word. Not an observation. Just the blank page and the quiet house and the feeling of something running out that had already run down further than I had allowed myself to see until right now.</p>
+  <p>Then the necklace, on the corner of the desk under the book I had set over it months ago, shifted slightly. Not moved &mdash; shifted. Like something settling. Like something patient adjusting its position.</p>
+  <p>I put the book back more firmly and went to bed.</p>
+  <p class="beat">That night, for the first time, I thought: <em>I might not be able to hold this together.</em> And I thought it clearly, without flinching, without immediately replacing it with a more manageable thought. I let it sit. It sat heavily. I did not sleep for a long time.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 16: Ch 15 -->
+  <div class="page" id="page-16">
+    <div class="page-inner">
+<article class="chapter" id="ch15">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Fifteen</span>
+    <h2 class="ch-title">Restoration</h2>
+  </div>
+
+  <p>I left the necklace alone for three days. Worked around it. Moved the book. Looked at it. Did not touch it. Every morning I told myself I would decide what to do with it today, and every morning I decided nothing, and the necklace sat there with the patience of something that did not need to rush.</p>
+  <p>The cracks were worsening. Longer open times. More frequent. Two in a single afternoon on Thursday. The last one that day stayed open long enough that I could hear something on the other side that wasn&rsquo;t words &mdash; a low, structural sound, like a building settling, but amplified, like everything fundamental about the way things held together was under a pressure it had not been designed for.</p>
+  <p>On the fourth day I picked up the necklace.</p>
+  <p>We tried everything that seemed reasonable: holding it, concentrating on it, attempting to replicate the conditions of the original activation. Nothing. It was warm and present and completely inert. After half an hour of failure I was frustrated in the grinding way of someone who needs to succeed at something and keeps not succeeding at it. I squeezed it too hard. The clasp edge cut my palm.</p>
+  <p>The blood was absorbed before it reached the desk. The necklace drank it directly from my skin. The metal changed under my hand &mdash; a shift of temperature, a change in density &mdash; and then it was glowing. Not visibly; the glow was interior, reaching upward through the palm that held it.</p>
+  <p>Then it showed us.</p>
+  <p>The vision unfolded for both of us at once. Scene after scene, same structure: a crack in reality, a figure with our face on one side, a second figure approaching. Each scene ending the same way. The first figure gone. The crack sealed.</p>
+  <p class="artifact">Again. Again. Again. The method varying, the conclusion identical. One version dead. One fracture closed. The pattern so consistent it was indistinguishable from a rule.</p>
+  <p>Then a scene different from the others. Not announced as different. Just different, if you were watching closely. The figure approaching the crack stopped. Turned. Looked at the fracture itself rather than at the version on the other side. And then stepped into it &mdash; not through it toward the other version, but <em>into</em> the crack itself, into the space between. The fracture sealed behind it. And in the background of the scene, the other cracks &mdash; the distant fractures that had been present throughout &mdash; dimmed. Not closed. But measurably reduced. As though the pressure on the whole system had eased.</p>
+  <p>The necklace went dark. My palm was still bleeding. We were back in the room.</p>
+  <p class="twin"><span class="twin-label">Him</span>The middle scene.</p>
+  <p class="mc">(I saw it.)</p>
+  <p class="twin"><span class="twin-label">Him</span>Someone chose differently. They went into the crack instead of through it.</p>
+  <p class="mc">(And the other cracks dimmed. Not just the one they went through. All of them.)</p>
+  <p class="twin"><span class="twin-label">Him</span>So there are two options. Kill the doubles. Or &mdash;</p>
+  <p class="mc">(I know what the second option is. I need time to think.)</p>
+  <p>The room was quiet. Outside, the ordinary neighborhood. Inside, two people in one body sitting with the weight of having been shown the shape of the problem and the shape of what it would cost to solve it.</p>
+  <p>He didn&rsquo;t push. That was new. He waited, which meant he understood this was not a moment that could be rushed, which meant somewhere in him there was a recognition of what the second option actually required and he was not yet ready to be the one who said it out loud either.</p>
+  <p class="beat">We put the necklace back on the desk. Neither of us covered it with the book again. It had earned its visible place. It would be there when we needed it. It had always been patient.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 17: Ch 16 -->
+  <div class="page" id="page-17">
+    <div class="page-inner">
+<article class="chapter" id="ch16">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Sixteen</span>
+    <h2 class="ch-title">Internal Conflict: Remaining Morality</h2>
+  </div>
+
+  <p>When the necklace activated it opened the shared space between us for the first time &mdash; a place assembled from available mental material, dim and sensory-thin, where we could see each other as something more direct than the journal&rsquo;s back-and-forth. He looked like me the way two flames from the same match look like each other. The same essential nature, differently expressed. And our lights were equal. Both of us the same brightness, measured against whatever scale the artifact used. I noted that without commentary because I didn&rsquo;t have commentary for it yet.</p>
+  <p>Him: &ldquo;The deaths of our doubles close the cracks. You&rsquo;ve suspected this since you saw it happen in the park. You didn&rsquo;t tell me.&rdquo;</p>
+  <p>Me: &ldquo;I needed to be certain first.&rdquo;</p>
+  <p>Him: &ldquo;You needed time to decide how to tell me in a way that reduced the chance I&rsquo;d act on it immediately.&rdquo;</p>
+  <p>He was not wrong. I didn&rsquo;t argue it.</p>
+  <p>Him: &ldquo;The solution is clear. Kill the doubles. The cracks close. The destruction stops.&rdquo;</p>
+  <p>Me: &ldquo;They are displaced people. Afraid people. They are &mdash;&rdquo;</p>
+  <p>Him: &ldquo;I know what they are. I was one. I know exactly what it is to be the version that got thrown out when someone else moved in. Don&rsquo;t explain displaced to me.&rdquo;</p>
+  <p>The silence after that had a specific texture.</p>
+  <p>Me: &ldquo;Then you understand exactly why I won&rsquo;t do it.&rdquo;</p>
+  <p>Him: &ldquo;I understand why you feel that way. I think feeling that way is not wrong. I think we don&rsquo;t have the luxury of acting on it.&rdquo;</p>
+  <p>Me: &ldquo;I killed you. I have carried that every day since I arrived here. It is in everything I do. Every dinner I eat at that table and every morning I wake up in that room. I am not willing to do it again, not seventeen times over, not once more. I will find a different way.&rdquo;</p>
+  <p>Him: &ldquo;What way? The necklace showed us two options. We are having this argument while the cracks are opening around us. There is no time to find a third option.&rdquo;</p>
+  <p>Me: &ldquo;Then I&rsquo;ll find one faster.&rdquo;</p>
+  <p>His light was steady in the shared space. Mine was not. He could see that. He chose not to use it.</p>
+  <p>Him: &ldquo;I think you&rsquo;re wrong. I think the time for the option you&rsquo;re refusing to name is also closing. I want you to understand that I know what it costs. I&rsquo;m not asking you to do something without cost. I am asking you to accept a cost so that the alternative doesn&rsquo;t become total.&rdquo;</p>
+  <p>Me: &ldquo;Not yet. Give me a week.&rdquo;</p>
+  <p>The space closed. The room. The necklace on the desk, uncovered now, warm even when it wasn&rsquo;t activated. Neither of us slept that night. For once the war between us had paused &mdash; we were too occupied with the larger problem to maintain the smaller one.</p>
+  <p>One week. The cracks worsened with a directness that felt pointed. A version of mother appeared through a crack in the kitchen wall &mdash; not afraid, just confused, looking at her own hands &mdash; and closed before I could do anything. A version of father appeared in the hallway, looked at me for exactly one second, and was gone.</p>
+  <p class="mc">(It is reaching the family. Whatever is fracturing is reaching far enough now that it can split the people in the rooms around me. I cannot allow them to see this. I cannot allow this to become something they are part of. They did not choose any of it. None of it was aimed at them. They are just the collateral geography of a decision I made before I understood what I was starting.)</p>
+  <p>On the eighth day of the stalemate, while I was managing a crack in the corner of the bedroom, he took the body. I became aware of it only when the street was wrong &mdash; I was outside, and the figure across the street had our face, and his intention was clarifying in the body like cold water moving through warm.</p>
+  <p>Me: <em>No &mdash;</em></p>
+  <p>The crack opened. He moved. It closed.</p>
+  <p>I regained the body standing in an empty street. The specific silence of something recently absent.</p>
+  <p class="twin"><span class="twin-label">Him</span>One. Look at the cracks. Count them. It worked.</p>
+  <p>I didn&rsquo;t look. I walked home with my hands not quite steady and his satisfaction somewhere in the chest I shared with him, residing there without my permission, warm and undisturbed.</p>
+  <p class="beat">He had done what I wouldn&rsquo;t do. In my body. Using my hands. It had worked. And the working of it was going to be the thing that made every argument I had left much harder to sustain.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 18: Ch 17 -->
+  <div class="page" id="page-18">
+    <div class="page-inner">
+<article class="chapter" id="ch17">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Seventeen</span>
+    <h2 class="ch-title">Unexpected Consequences</h2>
+  </div>
+
+  <p>He killed a second on Wednesday. A third on Friday.</p>
+  <p>I did not stop him. I told myself the first time that I was in shock. The second time I told myself I was conserving energy. The third time I had no story left, so I told myself nothing and simply registered, with a precision that had become second nature, the efficiency of it. He was clean. He didn&rsquo;t linger. He did it the way you do something necessary and unpleasant: with focus, with minimum theatrics, with the specific internal quality of a problem being addressed.</p>
+  <p>I was cataloguing his methods now. In the journal. In the same handwriting I used for everything else. I noticed I was doing this and did not stop doing it.</p>
+  <p class="mc">(This is what it looks like when something stops being monstrous and becomes operational. I want to record that I am watching it happen. I want some part of this journal to know that I have not stopped seeing what this is, even as I continue doing it.)</p>
+  <p>After the third one, something in the body was wrong.</p>
+  <p>The wrongness was internal. Nothing visible. But I reached for something on the desk and the reach was slightly slower than it should have been, slightly more effortful, as though the body were working at a deficit I hadn&rsquo;t created.</p>
+  <p>I opened the shared space.</p>
+  <p>His light: marginally brighter. Mine: marginally dimmer. The shift was small enough that I might have dismissed it if I hadn&rsquo;t been tracking the baseline carefully, and I had been tracking the baseline carefully, and the baseline had moved.</p>
+  <p class="mc">(Each kill strengthens the one who performs it. Two souls in this body. Strength for one is proportional weakness for the other. He gets stronger. I get weaker. And I have been standing here letting it happen three times over because I told myself the not-doing was a moral position.)</p>
+  <p class="twin"><span class="twin-label">Him</span>I noticed the shift too.</p>
+  <p>Me: &ldquo;You knew.&rdquo;</p>
+  <p class="twin"><span class="twin-label">Him</span>I suspected. I wasn&rsquo;t certain.</p>
+  <p>Me: &ldquo;And you did it anyway.&rdquo;</p>
+  <p class="twin"><span class="twin-label">Him</span>Someone had to. You weren&rsquo;t going to.</p>
+  <p>The unfairness of it was specific and complete. He had acted over my objection, in my body, and was now stronger for it, and I was weaker, and the cracks were fewer, and there was no version of this accounting that came out clean for me.</p>
+  <p>I killed three doubles over the next four days.</p>
+  <p>The reasoning, which I wrote down in full because I owed the journal at least that: to rebalance the light. To restore parity. To ensure that his growing advantage did not become the body&rsquo;s default configuration. A body that belonged entirely to him would pursue his agenda without the interference of mine, and I was not willing to become the residue. Not again. Not after everything.</p>
+  <p>That was the reasoning. It was accurate. It was also the same reasoning that, if you followed it all the way back to where it started, was the reasoning I had used when I poisoned him in the first place. <em>Someone had to. I was the one willing to do it.</em> I recognized that. I wrote it down in the journal and left it there where I would have to read it again, which seemed like the least I could do.</p>
+  <p>Six doubles total in twelve days. Cracks reduced to a fraction of their previous frequency. We opened the shared space and stood &mdash; or existed, or whatever the correct word was for two presences inhabiting a place that was neither of ours &mdash; and looked at each other. Both of us equally lit. Both of us equally tired.</p>
+  <p>Neither of us said anything for a long moment. Then:</p>
+  <p>Him: &ldquo;Six per week is the stabilization rate. We should hold to it.&rdquo;</p>
+  <p>Me: &ldquo;Six per week. We alternate. You don&rsquo;t get to be the sole executor of something this significant and I don&rsquo;t get to pretend my hands aren&rsquo;t in it.&rdquo;</p>
+  <p>Him: &ldquo;Equal accountability.&rdquo;</p>
+  <p>Me: &ldquo;And eight hours each. We both need the body functional. No more stress-exploitation, no more ambushes. A proper schedule.&rdquo;</p>
+  <p>He was quiet for a moment. Not resistant &mdash; something more like weighing.</p>
+  <p>Him: &ldquo;&hellip; Agreed.&rdquo;</p>
+  <p>The shared space closed. We were back in the room. The necklace on the desk, uncovered, catching the lamplight. Outside, the neighborhood at whatever hour it had become &mdash; late, quiet, the ordinary sounds of a world that had no idea what was being arranged inside the second-floor room.</p>
+  <p>We had just agreed to a schedule for killing. We had negotiated it the way you negotiate anything practical and necessary. With terms and conditions and the specific language of two people who have decided to cooperate rather than destroy each other, at least for now.</p>
+  <p>I sat at the desk for a while after the space closed. Not writing. Not tracking. Just sitting with the full weight of what the treaty was and what it made us both.</p>
+  <p>I thought about the bench behind the school building. I thought about Old Friend B saying <em>that option is open</em> and meaning it. I thought about my mother moving her chair closer at dinner because I had gone distant and she was trying to close the distance with furniture because she didn&rsquo;t have any other tool available.</p>
+  <p>I thought about how far I was, right now, from any of that.</p>
+  <p class="soul">[ MC &mdash; &#9689;&#9689;&#9689;&#9689;&#9689; ] [ HIM &mdash; &#9689;&#9689;&#9689;&#9689;&#9689; ]</p>
+  <p class="beat">Equal. Both of us at the same level, watching the other&rsquo;s light. A ceasefire built on mutual culpability. The most honest relationship I had in this world.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 19: Ch 18 -->
+  <div class="page" id="page-19">
+    <div class="page-inner">
+<article class="chapter" id="ch18">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Eighteen</span>
+    <h2 class="ch-title">Escalating Destruction</h2>
+  </div>
+
+  <p>The six-per-week held for three months.</p>
+  <p>During those three months something approaching normalcy reasserted itself, which was its own specific horror &mdash; not the horror of chaos but the horror of a routine that should not be a routine becoming one. We alternated. We maintained the eight-hour schedule. The cracks remained present but manageable. Family life continued. School continued. The performance of a son continued, slightly more hollow now, the interior of it occupied by two people who had stopped fighting each other long enough to fight something larger.</p>
+  <p>At the end of the third month, we killed six doubles on Monday. By Thursday the cracks were back at their pre-reduction frequency. We killed two more. The cracks stabilized, but not to where they had been before &mdash; to a ceiling slightly lower than the previous one, as though the problem had noted our adjustment and filed a counter-adjustment of its own.</p>
+  <p>We held eight per week. Two months later the cracks were back. We added more. A month after that the number moved again. Three weeks later it moved again. The intervals were shrinking. Every benchmark we reached became the new floor, and the floor kept dropping, and the rate required to hold it kept climbing, and the climbing kept accelerating.</p>
+  <p>What had been weekly became twice weekly. Twice weekly became every other day. By the fifth month we were killing every day. By the end of that month, one per day held the line for approximately six hours before new cracks opened to replace the ones we had closed.</p>
+  <p>A daily massacre. That was the word that arrived one morning while I was writing in the journal, and I crossed it out immediately because naming it made it worse, and then I left it crossed out but still readable because honesty mattered in the private record. Even when honesty made the private record unbearable.</p>
+  <p class="twin"><span class="twin-label">Him</span>We need to increase the rate again.</p>
+  <p>Me: &ldquo;We increase every time and it holds for less time than the time before. You see that. You&rsquo;re tracking it too.&rdquo;</p>
+  <p class="twin"><span class="twin-label">Him</span>What else do you suggest? We stop and watch it collapse?</p>
+  <p>Me: &ldquo;I&rsquo;m suggesting that increasing is not a solution. It is a delay. And the delay keeps getting shorter.&rdquo;</p>
+  <p class="twin"><span class="twin-label">Him</span>A shorter delay is still a delay. I&rsquo;ll take it.</p>
+  <p>He wanted to escalate. He was ready to escalate. I could feel the impatience of it in the shared space &mdash; his light steady and certain while mine turned the problem over and over and kept arriving at the same answer he didn&rsquo;t want to hear.</p>
+  <p>I checked the soul-light that evening. Equal, still. Both of us at the same level, both of us watching the same data lead to the same conclusion that neither of us was ready to act on.</p>
+  <p class="mc">(He wants more deaths. More kills, faster, in greater quantity. He thinks if we hit the right number we can outrun the collapse. He is wrong. The system adjusts to whatever we do. There is no number. But he is not going to accept that from reasoning alone. He needs to reach it himself.)</p>
+  <p class="mc">(And I cannot wait for him to reach it himself. Because while I am waiting, the destruction is widening. And he is going to break the treaty again the moment he decides his patience has run out. I have watched him long enough to know exactly when that moment is coming.)</p>
+  <p class="mc">(It is coming soon. Tonight, maybe. Tomorrow at the latest.)</p>
+  <p>I did not let him get there first.</p>
+  <p>During my control hours that night, I went out. I did not hold to the alternating schedule. I did not hold to any schedule. I went out and I kept going and I did not stop, and the cracks closed behind me in sequence, and the closure was clean and complete and added up faster than anything we had managed under the treaty.</p>
+  <p>I came back to the room before his control hours began. The cracks in my peripheral vision were the fewest I had seen in months. The shared space, when I opened it, showed my light noticeably brighter than his. He was still present, still lit, but the gap between us had shifted in a direction it had never shifted before.</p>
+  <p>He registered it immediately.</p>
+  <p class="twin"><span class="twin-label">Him</span>What did you do.</p>
+  <p>It was not a question. He already knew. He was asking me to say it.</p>
+  <p>Me: &ldquo;What you were going to do. I just did it first.&rdquo;</p>
+  <p>The shared space was very quiet. His light was steady but something in it had shifted in texture &mdash; not dimmer, not weaker, but different. The specific quality of someone who has been outmaneuvered by the thing they thought they understood best.</p>
+  <p class="twin"><span class="twin-label">Him</span>You broke the agreement.</p>
+  <p>Me: &ldquo;You were going to break it. I decided I preferred to be the one who broke it first.&rdquo;</p>
+  <p class="twin"><span class="twin-label">Him</span>&hellip;</p>
+  <p>He had no answer. Not because he was defeated &mdash; he was not defeated, not yet, not even close &mdash; but because the argument was not wrong, and he knew it, and knowing it was its own specific frustration. I had anticipated him. I had read the timeline of his patience and acted inside it. He was the one who was supposed to be proactive. He was the one who had broken agreements before. The role had reversed without warning and he had not been prepared for that.</p>
+  <p class="beat">For the first time since he had begun pushing back, I had surprised him. I did not feel good about it. But I noted, carefully, that I did not feel as bad about it as I had expected to.</p>
+  <p class="beat">That was the part that kept me awake afterward. Not what I had done. What I had felt while doing it.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 20: Ch 19 -->
+  <div class="page" id="page-20">
+    <div class="page-inner">
+<article class="chapter" id="ch19">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Nineteen</span>
+    <h2 class="ch-title">Battle for Dominance</h2>
+  </div>
+
+  <p>He figured it out within two days.</p>
+  <p>Not through anything I told him &mdash; I had told him nothing about the soul-light shift, about the fact that my kills were accumulating as strength while his were not, about the gap that had opened between our lights while he slept through his reduced control hours. I had said none of it. I had simply acted and kept the mechanism to myself and let the results speak in ways he could not immediately interpret.</p>
+  <p>But he was not slow, and he had been watching me carefully for months, and when he opened the shared space on the second day and saw the disparity clearly for the first time, the understanding arrived on his face &mdash; even in that space, even as a shape of light rather than a human expression &mdash; like something clicking into place.</p>
+  <p class="twin"><span class="twin-label">Him</span>Each kill strengthens the one who does it. At the expense of the other. You&rsquo;ve known this since Chapter Seventeen and you didn&rsquo;t tell me.</p>
+  <p>Me: &ldquo;I told you what you needed to know when you needed to know it.&rdquo;</p>
+  <p class="twin"><span class="twin-label">Him</span>You told me nothing. You used it. You&rsquo;ve been using it since you broke the agreement. You&rsquo;ve been accumulating strength while I&mdash;&rdquo;</p>
+  <p>Me: &ldquo;While you had less control time and couldn&rsquo;t do anything about it. Yes.&rdquo;</p>
+  <p>The shared space held the weight of that. His light was dimmer than it had been when we began the treaty. Not critically &mdash; he was still present, still competing, still very much a force in the body we shared. But the gap was real and measurable and he could see it now as clearly as I could.</p>
+  <p class="twin"><span class="twin-label">Him</span>Then I&rsquo;ll do the same. While I still have hours. I&rsquo;ll use every one of them.</p>
+  <p>Me: &ldquo;Go ahead.&rdquo;</p>
+  <p>He went ahead.</p>
+  <p>During his control hours he killed. Not at the careful alternating rate of the treaty, not at the methodical pace we had developed together over months of practice, but at a pace driven by urgency, by the specific desperation of someone watching a gap close around them and trying to stop it by effort alone. He was trying to narrow the distance between our lights. He was trying to pull himself back to parity.</p>
+  <p>He was too late. I had too much of a head start, and my hours were longer than his now, and the longer my hours the more I could accumulate, and the more I accumulated the shorter his hours became. The system fed itself. Every kill I made during my increased control time reduced his control time, which reduced his ability to make kills, which reduced his ability to close the gap, which gave me more time, which gave me more kills.</p>
+  <p>I watched it happen with the specific, dissociated clarity of someone observing a process they have set in motion and cannot stop even if they want to. I was not sure I wanted to stop it. That was the honest answer. I was not sure.</p>
+  <p>His control hours shrank. From eight to six. From six to four. From four to two. He used every minute of them with a focused efficiency that I found, against my will, something close to respect for. He was fighting with everything available to him. He was doing exactly what I had done when I first arrived in this body and felt him pushing at the edges of my control. He was fighting to exist. That was all. Just fighting to exist in the only place left that would have him.</p>
+  <p class="twin"><span class="twin-label">Him</span>You understand what you&rsquo;re doing.</p>
+  <p>Me: &ldquo;Yes.&rdquo;</p>
+  <p class="twin"><span class="twin-label">Him</span>This is the second time. You know that.</p>
+  <p>Me: &ldquo;I know that.&rdquo;</p>
+  <p class="twin"><span class="twin-label">Him</span>Does it feel different?</p>
+  <p>I considered this honestly. The honest answer was the one I owed him, at minimum.</p>
+  <p>Me: &ldquo;Yes. It feels worse.&rdquo;</p>
+  <p>His light was very dim in the shared space now. Not gone. Still present, still him, still the specific quality of a person rather than a fading signal. But close.</p>
+  <p class="twin"><span class="twin-label">Him</span>For what it&rsquo;s worth. I don&rsquo;t think you&rsquo;re a bad person. I think you&rsquo;re a person who keeps making the choice that keeps them alive. Same as me. Same as anyone.</p>
+  <p>Me: &ldquo;That&rsquo;s a generous reading.&rdquo;</p>
+  <p class="twin"><span class="twin-label">Him</span>It&rsquo;s an accurate one. Generous would be saying you didn&rsquo;t have a choice. You did. You just kept choosing the same direction.</p>
+  <p>His control hours reached zero on a Tuesday. There was no dramatic moment. His light in the shared space simply reached a level the body could not sustain alongside mine and then it was gone, and I was alone in the way I had been alone before any of this &mdash; except that I knew now what the aloneness was, what it had cost, what it had cost him specifically, and the knowing did not make the aloneness feel like freedom. It made it feel like a room with too much space in it.</p>
+  <p class="mc">(He is gone. I have killed him twice. Once with poison and a plan and the confidence of someone who thought death was a clean process. Once with mathematics and patience and the understanding of exactly what I was doing at every step. I am not sure which is worse. I am not sure the question has an answer that would help me.)</p>
+  <p>I sat in the room for a long time. The cracks continued outside. I could see them from the window &mdash; not many, not yet, the recent kills had bought time. But they were there. Opening and closing at their own pace, indifferent to what had just happened inside the room, indifferent to the fact that the person who had been helping manage them was gone.</p>
+  <p>I went out. I killed. The cracks closed.</p>
+  <p>I came back. I ate dinner. I said goodnight to my parents. I went upstairs.</p>
+  <p>The next day: the same. And the day after. The destruction slowed. The kills were sufficient. For now.</p>
+  <p class="mc">(But the number keeps increasing. I tracked it under the treaty and the trajectory was clear. There is no ceiling where it becomes enough. There is only the next increase, and the one after that, and an infinite supply of realities to crack and an infinite number of doubles to address and one person, in one body, with a finite amount of time and a kill count that keeps rising and never stops needing to rise.)</p>
+  <p>I did not write that in the journal. I thought it very clearly and then I closed the thought the way you close a door in a house you are still living in, knowing it will open again, knowing you will have to look at what is on the other side eventually.</p>
+  <p class="soul">[ MC &mdash; ◉◉◉◉◉◉◉◉ ] [ Him &mdash; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ]</p>
+  <p class="beat">Sole occupant. Undisputed. Killing every day in a world that kept needing more of it. Winning, in every way that could be measured. Winning in a direction that had no destination.</p>
+</article>
+    </div>
+  </div>
+
+  <!-- PAGE 21: Ch 20 -->
+  <div class="page" id="page-21">
+    <div class="page-inner">
+<article class="chapter" id="ch20">
+  <div class="ch-head">
+    <span class="ch-num">Chapter Twenty</span>
+    <h2 class="ch-title flicker">Final Choice</h2>
+  </div>
+
+  <p>I woke up and the ceiling was familiar.</p>
+  <p>I got out of bed. Made it &mdash; flat and neat, corners tucked the way I had learned to like them. Went downstairs. The kitchen smelled like eggs and something sweet. Mother was humming something without a title. Father was reading. I sat down and ate breakfast slowly, tasting it properly, not because I was performing attention but because I had decided to actually be present for this. The weight of the fork. The quality of the morning light. The exact pitch of the hum.</p>
+  <p>Me: &ldquo;Good morning.&rdquo;</p>
+  <p>Mother looked up with her good-morning smile. Father nodded from behind his pages. Ordinary. Unaware. The breakfast table doing what breakfast tables do, completely indifferent to the fact that the person sitting at it had killed more people than he would ever count.</p>
+  <p>After breakfast I went to school. Walked the route. The broken tile on the corner. The house with the dog. No cracks today &mdash; not because they were gone but because I had spent the predawn hours closing the ones that had opened overnight. The work of it was familiar now, like any practiced task. I barely thought about what I was doing anymore. That was the part I tried not to think about too carefully.</p>
+  <p>I sat through lectures. I answered correctly. I walked past Old Friend A and Old Friend B in the hall and they waved and I waved back and there was a version of ease in it by now &mdash; not the ease of genuine belonging but the ease of long practice. The ease of knowing the choreography so well you can perform it without any awareness of performing.</p>
+  <p>After school. The park. The bench. The fountain.</p>
+  <p>This was where the days of normalcy ended, because I needed to be somewhere that was his before it was mine, to do what I had decided to do. I had been avoiding the third option for months. Not because I didn&rsquo;t understand it. Because I understood it completely.</p>
+  <p>The necklace was in my pocket. It had been there all day, warm, patient, waiting.</p>
+  <p>I sat on the bench and looked at the fountain and let myself think about what I had thought I would never allow myself to think. Specifically. All the way to the end.</p>
+  <p class="mc">(The doubles are infinite. The realities are infinite. I am not. The kills slow the destruction but they do not stop it, and the number required to slow it grows faster than I can kill. This is not a problem I can solve by staying in it. The only person whose death closes a crack completely and permanently &mdash; not just seals it but removes it &mdash; is me. One version of me, stepping into the crack rather than through it. Into the fracture. Becoming the seal.)</p>
+  <p class="mc">(The necklace showed this. One person, one scene, different from all the others. They stepped in. And in the aftermath the other cracks &mdash; not all of them, not instantly, but visibly, measurably &mdash; dimmed.)</p>
+  <p class="mc">(I have been making the problem smaller by killing. I can make the problem end by going.)</p>
+  <p>The fountain ran. A bird. The late-afternoon light on the water doing what late-afternoon light does, indifferent and beautiful.</p>
+  <p>I thought about the breakfast table. I thought about my father&rsquo;s uncomplicated pride and my mother&rsquo;s hum without a title and the way Old Friend B&rsquo;s worry had felt like something I didn&rsquo;t deserve, aimed at a person who wasn&rsquo;t there to receive it, and how I had tried to become that person anyway and how far I had managed to close the distance before the distance proved unclosable.</p>
+  <p>I thought about him. Not the twin as opponent, not the twin as the body&rsquo;s competitor, but the boy in the mud in the photo album, age six, grinning with the specific whole-body confidence of a person who has not yet learned that the world can be unkind. The person my mother hummed for. The person my father&rsquo;s pride had been aimed at for eighteen years.</p>
+  <p>I had not been able to be him. But I had been able to be here, in his place, long enough to understand what I had taken. That was the thing I had refused to look at and that I was now looking at directly, without blinking, because there was no reason left not to.</p>
+  <p class="mc">(I wanted a better life. I got one, and it was borrowed, and everything I touched in it was already someone else&rsquo;s. And I did not deserve it, and I knew I did not deserve it, and I chose it anyway, and the choice broke something whose breakage I could not fix by staying.)</p>
+  <p>I took the necklace out of my pocket.</p>
+  <p>A crack appeared in the air above the fountain. Wide. Open longer than any I had seen. On its far side: my face, younger-looking, afraid. Not one of the mapped doubles. A new one. Someone who had just arrived and had not yet learned to be afraid quietly.</p>
+  <p>I stood. Walked toward the crack. Not toward him &mdash; the figure stepped back, uncertain &mdash; but toward the fracture itself. Toward the space between.</p>
+  <p>The necklace was warm in my closed hand. Warmer than it had ever been. As though it had always known this was where we were going and was ready for it.</p>
+
+  <div class="brk">&mdash;&mdash;&mdash;</div>
+
+  <p><em>What the sacrifice looked like from the outside, if anyone had been watching:</em></p>
+  <p><em>A person standing at the edge of a fountain in the late afternoon, holding something small in his closed hand. Then not standing there anymore. No transition visible. No light, no sound, no theatre. Just the bench, and the fountain, and the afternoon, and an absence shaped exactly like a person.</em></p>
+  <p><em>The crack above the fountain sealed immediately. Completely. Not the gradual narrowing of a mended fracture but an instant total closure, as though the fracture had never existed.</em></p>
+  <p><em>In the weeks that followed, the other cracks across the city dimmed. Slowed. Some closed entirely. The versions of people stopped appearing in hallways and parks and across streets. The air of the world went back to the ordinary quality of air that does not have something wrong with it.</em></p>
+  <p><em>Nobody knew why. Nobody had been able to see the problem in the first place. The solution was equally invisible. The world healed the way the world tends to: without acknowledgment, without ceremony, as though the injury had never been significant enough to name.</em></p>
+
+  <div class="brk">&mdash;&mdash;&mdash;</div>
+
+  <p class="void">And on the other side of the choice:</p>
+  <p class="void">No ceiling. No room. No morning light deciding which way to fall.</p>
+  <p class="void">No family. No table. No hum without a title.</p>
+  <p class="void">No friends whose grief could not find its target.</p>
+  <p class="void">No other voice. No second current. No shared space, no equal light.</p>
+  <p class="void">No versions of a face scattered across the surface of a cracking world.</p>
+  <p class="void">No cracks.</p>
+  <p class="void">No world to crack.</p>
+  <p class="void">Just space. Unbounded. Unwitnessed. Without dimension or direction or the particular quality of being observed.</p>
+  <p class="void">Just this.</p>
+  <p class="void">Just here.</p>
+  <p class="void">Just &mdash;</p>
+
+  <div class="final">No one else. Not anymore. Only me.</div>
+</article>
+    </div>
+  </div>
+
+</div><!-- /book-viewport -->
+
+<!-- BOTTOM BAR -->
+<footer id="bottombar">
+  <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>
+    <span class="nav-arrow">&larr;</span><span>Prev</span>
+  </button>
+  <div id="progress-wrap">
+    <span id="progress-label">Page 1 of 22</span>
+    <div id="progress-bar-wrap"><div id="progress-bar" style="width:4.5%"></div></div>
+  </div>
+  <button class="nav-btn" id="btn-next" onclick="navigate(1)">
+    <span>Next</span><span class="nav-arrow">&rarr;</span>
+  </button>
+</footer>
+
+<script>
+const TOTAL_PAGES = document.querySelectorAll('#book-viewport > .page').length;
+let current = 0;
+let isAnimating = false;
+let tocOpen = false;
+
+const PAGE_TITLES = [
+  'Cover',
+  'Book One — Only Me',
+    'Ch. 1 — New Life',
+    'Ch. 2 — Borrowed Comfort',
+    'Ch. 3 — The Shape of Absence',
+    'Ch. 4 — The First Error',
+    'Ch. 5 — Echoes',
+    'Ch. 6 — The Reflection Delay',
+    'Ch. 7 — Memory Bleed',
+    'Ch. 8 — Compression',
+    'Ch. 9 — Internal Battle: Part 1',
+    'Ch. 10 — Internal Battle: Part 2',
+    'Ch. 11 — The Other',
+    'Ch. 12 — Lots of Me',
+    'Ch. 13 — Crack in Reality',
+    'Ch. 14 — Reality on the Verge of Collapse',
+    'Ch. 15 — Restoration',
+    'Ch. 16 — Internal Conflict: Remaining Morality',
+    'Ch. 17 — Unexpected Consequences',
+    'Ch. 18 — Escalating Destruction',
+    'Ch. 19 — Battle for Dominance',
+    'Ch. 20 — Final Choice',
+];
+
+function goToPage(n, dir) {
+  if (n === current || isAnimating || n < 0 || n >= TOTAL_PAGES) return;
+  isAnimating = true;
+  const d = dir !== undefined ? dir : (n > current ? 1 : -1);
+  const oldEl = document.getElementById('page-' + current);
+  const newEl = document.getElementById('page-' + n);
+  newEl.scrollTop = 0;
+  oldEl.classList.add(d > 0 ? 'exit-left' : 'exit-right');
+  setTimeout(() => {
+    oldEl.classList.remove('active','exit-left','exit-right');
+    newEl.classList.add('active', d > 0 ? 'enter-right' : 'enter-left');
+    setTimeout(() => {
+      newEl.classList.remove('enter-right','enter-left');
+      isAnimating = false;
+    }, 450);
+  }, 450);
+  current = n;
+  updateUI();
+}
+
+function navigate(d) { closeToc(); goToPage(current + d, d); }
+
+function updateUI() {
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === TOTAL_PAGES - 1;
+  const pct = Math.max(2, (current + 1) / TOTAL_PAGES * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = 'Page ' + (current+1) + ' of ' + TOTAL_PAGES;
+  document.getElementById('topbar-title').textContent = PAGE_TITLES[current] || 'Only Me — Complete Edition';
+  document.querySelectorAll('.toc-link').forEach(b => b.classList.toggle('active', +b.dataset.page === current));
+}
+
+function closeToc() {
+  if (!tocOpen) return;
+  tocOpen = false;
+  document.getElementById('toc-panel').classList.remove('open');
+  document.getElementById('toc-toggle').setAttribute('aria-expanded','false');
+}
+
+document.getElementById('toc-toggle').addEventListener('click', () => {
+  tocOpen = !tocOpen;
+  document.getElementById('toc-panel').classList.toggle('open', tocOpen);
+  document.getElementById('toc-toggle').setAttribute('aria-expanded', String(tocOpen));
+});
+
+document.querySelectorAll('.toc-link').forEach(b => {
+  b.addEventListener('click', () => { closeToc(); goToPage(+b.dataset.page); });
+});
+
+document.getElementById('book-viewport').addEventListener('click', e => {
+  if (e.target.closest('.toc-link')) return;
+  closeToc();
+});
+
+// Swipe
+let swipeStart = null, swipeT = 0;
+const vp = document.getElementById('book-viewport');
+function onStart(x) { swipeStart = x; swipeT = Date.now(); }
+function onEnd(x) {
+  if (swipeStart === null) return;
+  const dx = x - swipeStart;
+  const dt = Date.now() - swipeT;
+  swipeStart = null;
+  if (Math.abs(dx) > 55 || (Math.abs(dx) > 25 && dt < 250)) {
+    navigate(dx < 0 ? 1 : -1);
+  }
+}
+vp.addEventListener('mousedown', e => { if (e.button===0) onStart(e.clientX); });
+vp.addEventListener('mouseup',   e => { if (e.button===0) onEnd(e.clientX); });
+vp.addEventListener('mouseleave', () => { swipeStart = null; });
+vp.addEventListener('touchstart', e => onStart(e.touches[0].clientX), {passive:true});
+vp.addEventListener('touchend',   e => onEnd(e.changedTouches[0].clientX), {passive:true});
+
+document.addEventListener('keydown', e => {
+  if (e.key==='ArrowRight'||e.key==='ArrowDown') navigate(1);
+  if (e.key==='ArrowLeft'||e.key==='ArrowUp') navigate(-1);
+  if (e.key==='Escape') closeToc();
+});
+
+updateUI();
+</script>
+</body>
+</html>
